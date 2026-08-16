@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NinjaMath</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --text-color: #e94560;
+            --panel-bg: #16213e;
+            --btn-color: #0f3460;
+            --btn-hover: #e94560;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            background-color: var(--panel-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: var(--text-color);
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        p {
+            margin-bottom: 20px;
+            color: #a2a2bd;
+        }
+        input {
+            width: 80%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid var(--btn-color);
+            border-radius: 8px;
+            background: #fff;
+            color: #333;
+            font-size: 1.2em;
+            text-align: center;
+        }
+        button {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+            width: 85%;
+        }
+        button:hover {
+            background-color: var(--btn-hover);
+        }
+        .hidden {
+            display: none;
+        }
+        #question {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+        #leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            text-align: left;
+        }
+        #leaderboard-list li {
+            background: #0f3460;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="screen-start">
+        <h1>🥷 NinjaMath</h1>
+        <p>Selesaikan misi matematik dalam 30 saat!</p>
+        <input type="text" id="player-name" placeholder="Masukkan Nama Ninja Anda" autocomplete="off">
+        <br>
+        <button id="btn-start">Mula Berjuang</button>
+    </div>
+
+    <div class="container hidden" id="screen-game">
+        <div class="stats">
+            <div>Masa: <span id="timer">30</span>s</div>
+            <div>Markah: <span id="score">0</span></div>
+        </div>
+        <div id="question">5 + 5</div>
+        <input type="number" id="answer-input" placeholder="Jawapan..." autocomplete="off">
+        <br>
+        <button id="btn-submit">Serang!</button>
+    </div>
+
+    <div class="container hidden" id="screen-end">
+        <h1>Misi Tamat!</h1>
+        <p>Markah anda: <span id="final-score" style="font-size: 2em; color: var(--text-color); font-weight: bold;">0</span></p>
+        
+        <h3>🏆 Papan Pendahulu (Top 5)</h3>
+        <ul id="leaderboard-list">
+            <li>Memuatkan data...</li>
+        </ul>
+
+        <button id="btn-restart">Main Semula</button>
+    </div>
+
+    <!-- Firebase SDK (Modular v9) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // Firebase Configuration yang anda berikan
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPEGVpxl15Akx9VBt-AT9bABvO2s1M3_w",
+            authDomain: "ninjamath-b88d2.firebaseapp.com",
+            databaseURL: "https://ninjamath-b88d2-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "ninjamath-b88d2",
+            storageBucket: "ninjamath-b88d2.firebasestorage.app",
+            messagingSenderId: "276177438351",
+            appId: "1:276177438351:web:a4cb3ec4b7caac126d12fa"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Elemen DOM
+        const screenStart = document.getElementById('screen-start');
+        const screenGame = document.getElementById('screen-game');
+        const screenEnd = document.getElementById('screen-end');
+        
+        const playerNameInput = document.getElementById('player-name');
+        const btnStart = document.getElementById('btn-start');
+        
+        const questionEl = document.getElementById('question');
+        const answerInput = document.getElementById('answer-input');
+        const btnSubmit = document.getElementById('btn-submit');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        
+        const finalScoreEl = document.getElementById('final-score');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const btnRestart = document.getElementById('btn-restart');
+
+        // Pembolehubah Permainan
+        let score = 0;
+        let timeLeft = 30;
+        let currentAnswer = 0;
+        let gameInterval;
+        let playerName = "Ninja Tanpa Nama";
+
+        // Fungsi Tukar Skrin
+        function showScreen(screen) {
+            screenStart.classList.add('hidden');
+            screenGame.classList.add('hidden');
+            screenEnd.classList.add('hidden');
+            screen.classList.remove('hidden');
+        }
+
+        // Janakan Soalan Matematik
+        function generateQuestion() {
+            const operators = ['+', '-', '*'];
+            const operator = operators[Math.floor(Math.random() * operators.length)];
+            let num1, num2;
+
+            if (operator === '*') {
+                num1 = Math.floor(Math.random() * 10) + 1;
+                num2 = Math.floor(Math.random() * 10) + 1;
+                currentAnswer = num1 * num2;
+            } else if (operator === '-') {
+                num1 = Math.floor(Math.random() * 50) + 10;
+                num2 = Math.floor(Math.random() * num1); // Pastikan jawapan tak negatif
+                currentAnswer = num1 - num2;
+            } else {
+                num1 = Math.floor(Math.random() * 50) + 1;
+                num2 = Math.floor(Math.random() * 50) + 1;
+                currentAnswer = num1 + num2;
+            }
+
+            questionEl.innerText = `${num1} ${operator} ${num2}`;
+            answerInput.value = '';
+            answerInput.focus();
+        }
+
+        // Mulakan Permainan
+        btnStart.addEventListener('click', () => {
+            if (playerNameInput.value.trim() !== '') {
+                playerName = playerNameInput.value.trim();
+            }
+            score = 0;
+            timeLeft = 30;
+            scoreEl.innerText = score;
+            timerEl.innerText = timeLeft;
+            
+            showScreen(screenGame);
+            generateQuestion();
+
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        });
+
+        // Semak Jawapan
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value);
+            if (userAnswer === currentAnswer) {
+                score += 10;
+                scoreEl.innerText = score;
+                generateQuestion();
+            } else {
+                // Penalti atau abaikan jika salah
+                answerInput.value = '';
+                answerInput.focus();
+            }
+        }
+
+        btnSubmit.addEventListener('click', checkAnswer);
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnswer();
+        });
+
+        // Tamatkan Permainan & Simpan ke Firebase
+        function endGame() {
+            clearInterval(gameInterval);
+            finalScoreEl.innerText = score;
+            showScreen(screenEnd);
+            
+            saveScore(playerName, score);
+            loadLeaderboard();
+        }
+
+        // Fungsi Firebase: Simpan Markah
+        function saveScore(name, score) {
+            if(score > 0) {
+                const scoreListRef = ref(db, 'leaderboard');
+                const newScoreRef = push(scoreListRef);
+                set(newScoreRef, {
+                    name: name,
+                    score: score,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        // Fungsi Firebase: Muat Papan Pendahulu
+        function loadLeaderboard() {
+            const topScoresQuery = query(ref(db, 'leaderboard'), orderByChild('score'), limitToLast(5));
+            
+            onValue(topScoresQuery, (snapshot) => {
+                leaderboardList.innerHTML = '';
+                if (snapshot.exists()) {
+                    let scoresArray = [];
+                    snapshot.forEach((childSnapshot) => {
+                        scoresArray.push(childSnapshot.val());
+                    });
+                    
+                    // Susun dari paling tinggi ke rendah
+                    scoresArray.sort((a, b) => b.score - a.score);
+                    
+                    scoresArray.forEach((data, index) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>#${index + 1} ${data.name}</span> <span>${data.score} ⭐️</span>`;
+                        leaderboardList.appendChild(li);
+                    });
+                } else {
+                    leaderboardList.innerHTML = '<li>Belum ada markah direkodkan.</li>';
+                }
+            });
+        }
+
+        // Main Semula
+        btnRestart.addEventListener('click', () => {
+            showScreen(screenStart);
+            playerNameInput.value = '';
+            playerNameInput.focus();
+        });
+
+    </script>
+</body>
+</html>
