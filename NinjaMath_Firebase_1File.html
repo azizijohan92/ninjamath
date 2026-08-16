@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111111">
+<title>NinjaMath — Year 1 Mathematics Malaysia</title>
+<style>
+:root{
+  --black:#111111;--deep:#050505;--yellow:#FFD600;--yellow2:#FFEA00;--warm:#FFC400;
+  --white:#fff;--cream:#FFFBEA;--grey:#F4F4F4;--muted:#707070;--green:#20AE6B;
+  --red:#E84E4E;--blue:#3582FF;--shadow:0 14px 40px rgba(0,0,0,.12);--r:24px
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:Inter,ui-rounded,"Nunito","Segoe UI",system-ui,sans-serif;color:var(--black);
+  background:linear-gradient(180deg,#fffef8 0%,#fff8d8 100%);min-height:100vh
+}
+button,input,select{font:inherit}button{cursor:pointer}
+.hidden{display:none!important}
+#authScreen{
+  min-height:100vh;display:grid;place-items:center;padding:24px;background:
+  radial-gradient(circle at 12% 15%,rgba(255,214,0,.25),transparent 27%),
+  radial-gradient(circle at 88% 88%,rgba(255,214,0,.2),transparent 32%),#111;color:white
+}
+.auth-shell{width:min(1020px,100%);display:grid;grid-template-columns:1fr 460px;gap:26px;align-items:stretch}
+.auth-brand{padding:42px;display:flex;flex-direction:column;justify-content:center}
+.auth-brand .mega{font-size:clamp(58px,10vw,110px);line-height:.8;margin:20px 0}
+.auth-brand h1{font-size:clamp(45px,7vw,78px);line-height:.9;letter-spacing:-3px;margin:0}
+.auth-brand h1 b{color:var(--yellow)}
+.auth-brand p{color:#cfcfcf;font-weight:700;line-height:1.6;max-width:560px;font-size:17px}
+.auth-card{background:white;color:#111;border-radius:34px;padding:30px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.auth-card h2{margin:0 0 5px;font-size:30px;letter-spacing:-1px}
+.auth-card>p{color:#777;font-weight:700;margin-top:6px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#f1f1f1;padding:5px;border-radius:16px;margin:22px 0}
+.tab{border:0;background:transparent;padding:12px;border-radius:12px;font-weight:1000}
+.tab.active{background:#111;color:#fff}
+.form{display:grid;gap:12px}
+.input{width:100%;border:2px solid #ddd;border-radius:15px;padding:14px 15px;outline:0}
+.input:focus{border-color:#111;box-shadow:0 0 0 4px rgba(255,214,0,.3)}
+.btn{border:0;border-radius:17px;padding:14px 18px;min-height:52px;font-weight:1000;transition:.16s}
+.btn:hover{transform:translateY(-2px)}
+.btn.primary{background:var(--yellow);color:#111;box-shadow:0 6px 0 #b59300}
+.btn.dark{background:#111;color:#fff}.btn.white{background:#fff;color:#111;border:2px solid #111}
+.btn.google{background:white;border:2px solid #ddd}.btn.ghost{background:#f4f4f4;color:#111}
+.or{display:flex;align-items:center;gap:10px;color:#aaa;font-size:12px;font-weight:900;margin:8px 0}.or:before,.or:after{content:"";height:1px;background:#ddd;flex:1}
+.auth-note{font-size:12px;color:#888;line-height:1.45;margin-top:16px}
+.error{color:#b52525;background:#ffeaea;padding:11px 13px;border-radius:12px;font-size:13px;font-weight:800;display:none}
+.app{max-width:1180px;margin:auto;min-height:100vh;padding-bottom:92px}
+.topbar{
+ display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 21px;position:sticky;top:0;
+ background:rgba(255,254,248,.92);backdrop-filter:blur(14px);z-index:50;border-bottom:1px solid rgba(0,0,0,.06)
+}
+.brand{display:flex;align-items:center;gap:11px;font-size:24px;font-weight:1000;letter-spacing:-1px}
+.logo{width:52px;height:52px;border-radius:17px;background:#111;display:grid;place-items:center;border-bottom:7px solid var(--yellow);position:relative}
+.logo span{font-size:27px}.logo small{position:absolute;right:-3px;bottom:-5px;background:var(--yellow);font-size:8px;padding:2px 4px;border:2px solid #111;border-radius:5px}
+.brand b{color:#d3a900}.top-actions{display:flex;align-items:center;gap:9px}
+.pill{border:2px solid #111;background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;font-weight:1000}
+.pill.yellow{background:var(--yellow)}
+.screen{display:none;padding:24px}.screen.active{display:block;animation:fade .23s ease}
+@keyframes fade{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:none}}
+.hero{
+ background:#111;color:#fff;border-radius:32px;padding:30px;display:grid;grid-template-columns:1.35fr .65fr;gap:20px;
+ box-shadow:var(--shadow);overflow:hidden;position:relative
+}
+.hero:after{content:"";width:260px;height:260px;border-radius:50%;background:var(--yellow);position:absolute;right:-110px;top:-100px;opacity:.16}
+.eyebrow{color:var(--yellow);text-transform:uppercase;letter-spacing:1.4px;font-weight:1000;font-size:12px}
+.hero h1{font-size:clamp(38px,5.4vw,68px);line-height:.93;letter-spacing:-3px;margin:11px 0 14px}
+.hero p{color:#ddd;line-height:1.55;font-weight:700;max-width:620px}
+.cta-row{display:flex;gap:11px;flex-wrap:wrap;margin-top:20px}
+.mascot{align-self:center;justify-self:center;width:min(245px,100%);aspect-ratio:1;border-radius:50%;background:#202020;border:10px solid var(--yellow);display:grid;place-items:center;position:relative}
+.mascot .ninja{font-size:95px}.mascot .calc{position:absolute;right:15px;bottom:15px;background:var(--yellow);color:#111;padding:8px;border-radius:11px;border:4px solid #111;font-size:11px;font-weight:1000}
+.section-title{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:28px 3px 13px}
+.section-title h2{font-size:25px;margin:0;letter-spacing:-.8px}.section-title p{margin:4px 0 0;color:#777;font-size:13px;font-weight:750}
+.card{background:#fff;border:1px solid #eee;border-radius:25px;padding:21px;box-shadow:var(--shadow)}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-top:17px}
+.stat{background:#fff;border:1px solid #eee;border-radius:21px;padding:17px;box-shadow:var(--shadow)}
+.stat .label{color:#777;font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.8px}.stat .value{font-size:28px;font-weight:1000;margin-top:6px}
+.daily{background:linear-gradient(135deg,var(--yellow),#ffec57);display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px}
+.daily h3{margin:0 0 5px;font-size:24px}.daily p{margin:0;font-weight:800}
+.world-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.world{background:#fff;border:2px solid transparent;text-align:left;border-radius:24px;padding:18px;min-height:170px;box-shadow:var(--shadow);transition:.15s}
+.world:hover{transform:translateY(-3px);border-color:var(--yellow)}.world .icon{font-size:34px}.world h3{font-size:18px;margin:11px 0 4px}.world p{font-size:12px;color:#777;font-weight:700;margin:0}
+.progress{height:11px;background:#eee;border-radius:99px;overflow:hidden;margin-top:14px}.progress i{height:100%;display:block;background:var(--yellow);border-radius:99px}.pct{font-size:11px;font-weight:1000;margin-top:6px}
+.bottom-nav{
+ position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,calc(100% - 18px));z-index:60;
+ display:grid;grid-template-columns:repeat(5,1fr);padding:7px;background:#111;border:4px solid #222;border-bottom:0;border-radius:23px 23px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.15)
+}
+.nav-btn{border:0;background:transparent;color:#aaa;border-radius:14px;padding:8px 3px;font-size:10px;font-weight:1000}.nav-btn span{display:block;font-size:20px}.nav-btn.active{background:var(--yellow);color:#111}
+.quiz-wrap{max-width:850px;margin:auto}.quiz-head{display:flex;justify-content:space-between;gap:15px;align-items:center}.xp-chip{background:#111;color:#fff;border-radius:99px;padding:9px 14px;font-weight:1000}
+.q-progress{height:14px;background:#eee;border-radius:99px;overflow:hidden;margin:17px 0}.q-progress i{display:block;height:100%;background:var(--yellow);transition:.3s}
+.question-card{background:#fff;border-radius:30px;padding:28px;box-shadow:var(--shadow);text-align:center;min-height:300px;display:grid;align-content:center}
+.qtopic{color:#9d7d00;text-transform:uppercase;font-weight:1000;font-size:12px;letter-spacing:1px}
+.visual{font-size:42px;line-height:1.5;letter-spacing:3px}.question{font-size:clamp(35px,7vw,62px);font-weight:1000;letter-spacing:-2px;margin:15px 0}.question.small{font-size:clamp(25px,4vw,38px)}
+.answers{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin-top:17px}.answer{background:#fff;border:3px solid #111;border-radius:21px;min-height:76px;font-size:23px;font-weight:1000;box-shadow:0 6px 0 #111;transition:.12s}
+.answer:hover{background:#fffbea}.answer.correct{background:#ddf8e8;border-color:var(--green);box-shadow:0 6px 0 var(--green)}.answer.wrong{background:#ffe1e1;border-color:var(--red);box-shadow:0 6px 0 var(--red)}
+.feedback{text-align:center;min-height:36px;font-size:18px;font-weight:1000;margin-top:14px}
+.result{max-width:700px;margin:auto;text-align:center}.result .big{font-size:75px}.score-big{font-size:55px;font-weight:1000}.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.result-grid .stat{box-shadow:none}
+.rank-list{display:grid;gap:9px}.rank-row{display:grid;grid-template-columns:48px 1fr auto;align-items:center;padding:14px 16px;background:#fff;border:2px solid #eee;border-radius:18px}.rank-row.me{background:#fffbea;border-color:var(--yellow)}.rank-num,.rank-name,.rank-xp{font-weight:1000}
+.profile-grid{display:grid;grid-template-columns:280px 1fr;gap:18px}.profile-side{text-align:center}.avatar{width:110px;height:110px;border-radius:50%;background:#111;border:8px solid var(--yellow);display:grid;place-items:center;font-size:54px;margin:0 auto 12px}
+.badges{display:flex;flex-wrap:wrap;gap:9px}.badge{background:#fffbea;border:2px solid var(--yellow);padding:11px;border-radius:15px;font-weight:900}
+.parent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.switcher{display:flex;gap:9px;flex-wrap:wrap}.child{border:2px solid #ddd;background:#fff;padding:11px 14px;border-radius:16px;font-weight:900}.child.active{background:#111;color:#fff;border-color:#111}
+.topic-bars{display:grid;gap:14px}.bar-row{display:grid;grid-template-columns:145px 1fr 50px;gap:11px;align-items:center;font-weight:850}.bar{height:12px;background:#eee;border-radius:99px;overflow:hidden}.bar i{height:100%;display:block;background:#111}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #eee}.toggle{width:57px;height:31px;border:0;border-radius:99px;background:#bbb;position:relative}.toggle:after{content:"";width:23px;height:23px;border-radius:50%;background:#fff;position:absolute;left:4px;top:4px;transition:.18s}.toggle.on{background:#111}.toggle.on:after{left:30px;background:var(--yellow)}
+.firebase-status{display:inline-flex;gap:7px;align-items:center;font-size:12px;font-weight:900;color:#666}.dot{width:9px;height:9px;border-radius:50%;background:#bbb}.dot.online{background:var(--green)}
+.toast{position:fixed;top:85px;left:50%;transform:translate(-50%,-18px);z-index:100;background:#111;color:#fff;padding:13px 18px;border-radius:99px;font-weight:900;opacity:0;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}.confetti b{position:absolute;top:-30px;font-size:22px;animation:fall 1.4s linear forwards}@keyframes fall{to{transform:translateY(110vh) rotate(500deg)}}
+@media(max-width:900px){.auth-shell{grid-template-columns:1fr}.auth-brand{padding:20px}.auth-brand p{display:none}.hero{grid-template-columns:1fr}.mascot{width:200px}.world-grid{grid-template-columns:repeat(2,1fr)}.stat-grid{grid-template-columns:repeat(2,1fr)}.profile-grid,.parent-grid{grid-template-columns:1fr}}
+@media(max-width:560px){#authScreen{padding:14px}.auth-brand{padding:10px}.auth-brand .mega{font-size:65px;margin:5px 0}.auth-brand h1{font-size:46px}.auth-card{padding:22px;border-radius:26px}.screen{padding:15px}.topbar{padding:11px}.brand{font-size:19px}.logo{width:45px;height:45px}.top-actions .parent-pill{display:none}.hero{padding:22px;border-radius:25px}.hero h1{font-size:42px}.mascot{width:160px}.world-grid{grid-template-columns:1fr 1fr;gap:9px}.world{padding:14px;min-height:145px}.answers{grid-template-columns:1fr}.answer{min-height:67px}.result-grid{grid-template-columns:1fr 1fr}.daily{grid-template-columns:1fr}.bottom-nav{width:100%;border-left:0;border-right:0;border-radius:19px 19px 0 0}.bar-row{grid-template-columns:100px 1fr 40px;font-size:12px}}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-shell">
+    <div class="auth-brand">
+      <div class="mega">🥷🧮</div>
+      <h1>Ninja<b>Math</b></h1>
+      <p>Interactive Year 1 mathematics practice for Malaysian children. Learn, practise, master, earn XP and become a Math Ninja.</p>
+    </div>
+    <div class="auth-card">
+      <div class="eyebrow" style="color:#9d7d00">Welcome to NinjaMath</div>
+      <h2 id="authHeading">Parent Login</h2>
+      <p id="authSub">Sign in to save your child's progress.</p>
+      <div class="tabs">
+        <button id="loginTab" class="tab active" onclick="setAuthMode('login')">Login</button>
+        <button id="registerTab" class="tab" onclick="setAuthMode('register')">Create Account</button>
+      </div>
+      <div id="authError" class="error"></div>
+      <div class="form">
+        <input class="input" id="authName" placeholder="Parent name" autocomplete="name" style="display:none">
+        <input class="input" id="authEmail" type="email" placeholder="Email address" autocomplete="email">
+        <input class="input" id="authPassword" type="password" placeholder="Password (minimum 6 characters)" autocomplete="current-password">
+        <button class="btn primary" id="emailAuthBtn" onclick="emailAuth()">LOGIN</button>
+        <div class="or">OR</div>
+        <button class="btn google" onclick="googleLogin()">🔵 Continue with Google</button>
+        <button class="btn ghost" onclick="guestLogin()">🥷 Try as Guest</button>
+      </div>
+      <div class="auth-note">Guest Mode stores progress only on this device. Firebase login stores child progress online in your NinjaMath project.</div>
+    </div>
+  </div>
+</div>
+
+<div id="appRoot" class="hidden">
+  <div class="toast" id="toast">Great job!</div>
+  <div class="confetti" id="confetti"></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><div class="logo"><span>🥷</span><small>123</small></div><div>Ninja<b>Math</b></div></div>
+      <div class="top-actions">
+        <span class="firebase-status"><span id="dbDot" class="dot"></span><span id="dbText">Guest</span></span>
+        <button class="pill parent-pill" onclick="showScreen('parent')">👨‍👩‍👧 Parent</button>
+        <button class="pill yellow" id="userPill" onclick="showScreen('profile')">🥷 Adam · Lv 1</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="home" class="screen active">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">Year 1 Mathematics · Malaysia</div>
+            <h1>Train Your Math.<br>Become a Ninja.</h1>
+            <p>Short missions, smart practice, instant feedback and fun rewards designed to help Year 1 pupils build real mathematics mastery.</p>
+            <div class="cta-row">
+              <button class="btn primary" onclick="startQuiz('Mixed Ninja Mission')">⚡ START MISSION</button>
+              <button class="btn white" onclick="showScreen('learn')">Explore Math Worlds</button>
+            </div>
+          </div>
+          <div class="mascot"><div class="ninja">🥷</div><div class="calc">7 + 5 = 12</div></div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Ninja XP</div><div class="value" id="homeXp">0</div></div>
+          <div class="stat"><div class="label">Daily Streak</div><div class="value" id="homeStreak">🔥 1</div></div>
+          <div class="stat"><div class="label">Accuracy</div><div class="value" id="homeAccuracy">—</div></div>
+          <div class="stat"><div class="label">Ninja Belt</div><div class="value" id="homeBelt">⚪ White</div></div>
+        </div>
+
+        <div class="section-title"><div><h2>Today's Ninja Mission</h2><p>Personalised mixed practice.</p></div></div>
+        <div class="card daily">
+          <div><h3>🥷 Daily Training</h3><p>10 mixed questions · Build accuracy and mastery</p></div>
+          <button class="btn dark" onclick="startQuiz('Daily Ninja Training')">START</button>
+        </div>
+
+        <div class="section-title"><div><h2>Math Worlds</h2><p>Covering all major Year 1 mathematics domains.</p></div><button class="pill" onclick="showScreen('learn')">View All</button></div>
+        <div class="world-grid" id="homeWorlds"></div>
+      </section>
+
+      <section id="learn" class="screen">
+        <div class="section-title"><div><h2>Math Worlds</h2><p>Choose a topic and begin training.</p></div></div>
+        <div class="world-grid" id="allWorlds"></div>
+      </section>
+
+      <section id="quiz" class="screen">
+        <div class="quiz-wrap">
+          <div class="quiz-head">
+            <div><div class="eyebrow" style="color:#9d7d00">Ninja Training</div><div style="font-weight:1000" id="quizTitle">Mission</div></div>
+            <div class="xp-chip">⭐ <span id="quizXp">0</span> XP</div>
+          </div>
+          <div class="q-progress"><i id="qBar" style="width:10%"></i></div>
+          <div class="question-card">
+            <div class="qtopic" id="qTopic">Numbers</div>
+            <div class="visual" id="qVisual"></div>
+            <div class="question" id="qText">7 + 5 = ?</div>
+          </div>
+          <div class="answers" id="answers"></div>
+          <div class="feedback" id="feedback"></div>
+        </div>
+      </section>
+
+      <section id="ranking" class="screen">
+        <div class="section-title"><div><h2>🏆 Ninja Ranking</h2><p>Leaderboard based on total Ninja XP.</p></div><button class="pill" onclick="loadLeaderboard()">Refresh</button></div>
+        <div class="card"><div class="rank-list" id="rankList"></div></div>
+      </section>
+
+      <section id="profile" class="screen">
+        <div class="profile-grid">
+          <div class="card profile-side">
+            <div class="avatar">🥷</div>
+            <h2 id="profileName">Adam</h2>
+            <div id="profileLevel" style="font-weight:900;color:#777">Level 1 · Rookie Ninja</div>
+            <div class="progress"><i id="profileXpBar" style="width:0%"></i></div>
+            <p><b id="profileXp">0</b> XP</p>
+            <div class="badge" id="profileBelt">⚪ White Ninja Belt</div>
+          </div>
+          <div>
+            <div class="stat-grid">
+              <div class="stat"><div class="label">Questions</div><div class="value" id="profileQuestions">0</div></div>
+              <div class="stat"><div class="label">Accuracy</div><div class="value" id="profileAccuracy">—</div></div>
+              <div class="stat"><div class="label">Streak</div><div class="value" id="profileStreak">🔥 1</div></div>
+              <div class="stat"><div class="label">Mastery</div><div class="value" id="profileMastery">0%</div></div>
+            </div>
+            <div class="section-title"><div><h2>Achievements</h2><p>Your Ninja collection.</p></div></div>
+            <div class="badges" id="achievementList">
+              <div class="badge">🏅 First Mission</div><div class="badge">🔢 Number Ninja</div><div class="badge">🔥 Daily Learner</div>
+            </div>
+            <div class="section-title"><div><h2>Settings</h2></div></div>
+            <div class="card">
+              <div class="setting-row"><b>🔊 Sound Effects</b><button class="toggle on" id="sfxToggle" onclick="toggleSetting(this,'sfx')"></button></div>
+              <div class="setting-row"><b>🎵 Background Music</b><button class="toggle" id="musicToggle" onclick="toggleSetting(this,'music')"></button></div>
+              <div class="setting-row"><b>☁️ Account</b><span id="accountLabel" style="font-size:13px;font-weight:800;color:#777">Guest Mode</span></div>
+              <div style="padding-top:16px"><button class="btn white" style="width:100%" onclick="logout()">Log Out</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="parent" class="screen">
+        <div class="section-title"><div><h2>Parent Dashboard</h2><p>See progress, strengths and practice priorities.</p></div></div>
+        <div class="card">
+          <div style="font-size:12px;color:#777;font-weight:1000;text-transform:uppercase;margin-bottom:9px">Child Profile</div>
+          <div class="switcher">
+            <button class="child active">🥷 <span id="parentChildName">Adam</span> · Year 1</button>
+            <button class="child" onclick="toast('Add-child flow can be connected to Firebase next.')">＋ Add Child</button>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Overall Mastery</div><div class="value" id="parentMastery">0%</div></div>
+          <div class="stat"><div class="label">Accuracy</div><div class="value" id="parentAccuracy">—</div></div>
+          <div class="stat"><div class="label">Questions</div><div class="value" id="parentQuestions">0</div></div>
+          <div class="stat"><div class="label">Ninja XP</div><div class="value" id="parentXp">0</div></div>
+        </div>
+        <div class="parent-grid" style="margin-top:18px">
+          <div class="card"><h3 style="margin-top:0">Topic Mastery</h3><div class="topic-bars" id="parentBars"></div></div>
+          <div class="card">
+            <h3 style="margin-top:0">Smart Recommendation</h3>
+            <div style="background:#fff4b6;border:2px solid var(--yellow);border-radius:18px;padding:18px">
+              <div style="font-size:12px;font-weight:1000;text-transform:uppercase">Recommended Practice</div>
+              <h2 style="margin:7px 0">🕒 Time & Clock</h2>
+              <p style="font-weight:700;line-height:1.5">Complete a short 10-question mission to strengthen time, days and clock-reading skills.</p>
+              <button class="btn dark" onclick="startQuiz('Time')">START PRACTICE</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="result" class="screen">
+        <div class="card result">
+          <div class="big">🥷🏆</div>
+          <div class="eyebrow" style="color:#9d7d00">Mission Complete!</div>
+          <div class="score-big" id="resultXp">+0 XP</div>
+          <p style="font-weight:850;color:#777">Your Ninja training has been saved.</p>
+          <div class="result-grid">
+            <div class="stat"><div class="label">Correct</div><div class="value" id="resultCorrect">0/10</div></div>
+            <div class="stat"><div class="label">Accuracy</div><div class="value" id="resultAccuracy">0%</div></div>
+            <div class="stat"><div class="label">Best Streak</div><div class="value" id="resultStreak">🔥 0</div></div>
+            <div class="stat"><div class="label">Ninja Rank</div><div class="value" id="resultRank">#—</div></div>
+          </div>
+          <div class="cta-row" style="justify-content:center">
+            <button class="btn primary" onclick="startQuiz(lastQuizTitle)">Practice Again</button>
+            <button class="btn dark" onclick="showScreen('ranking')">Leaderboard</button>
+            <button class="btn white" onclick="showScreen('home')">Home</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="home" onclick="showScreen('home')"><span>🏠</span>Home</button>
+    <button class="nav-btn" data-screen="learn" onclick="showScreen('learn')"><span>📚</span>Learn</button>
+    <button class="nav-btn" data-screen="quiz" onclick="startQuiz('Ninja Challenge')"><span>⚡</span>Challenge</button>
+    <button class="nav-btn" data-screen="ranking" onclick="showScreen('ranking')"><span>🏆</span>Ranking</button>
+    <button class="nav-btn" data-screen="profile" onclick="showScreen('profile')"><span>🥷</span>Profile</button>
+  </nav>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.1/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
+import {
+  getDatabase, ref, set, get, update, push, query, orderByChild, limitToLast, onValue
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+
+/* =========================================================
+   FIREBASE CONFIG — PROVIDED BY NINJAMATH OWNER
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBPEGVpxl15Akx9VBt-AT9bABvO2s1M3_w",
+  authDomain: "ninjamath-b88d2.firebaseapp.com",
+  databaseURL: "https://ninjamath-b88d2-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "ninjamath-b88d2",
+  storageBucket: "ninjamath-b88d2.firebasestorage.app",
+  messagingSenderId: "276177438351",
+  appId: "1:276177438351:web:a4cb3ec4b7caac126d12fa"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getDatabase(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+
+let authMode = "login";
+let isGuest = false;
+let currentUser = null;
+let child = {
+  name:"Adam", xp:0, questions:0, correct:0, streak:1,
+  mastery:{numbers:0,operations:0,fractions:0,money:0,time:0,measurement:0,shapes:0,data:0}
+};
+let quizIndex=0, quizCorrect=0, quizXp=0, streak=0, bestStreak=0, answered=false, questions=[];
+window.lastQuizTitle="Mixed Ninja Mission";
+
+const worlds = [
+ {id:"numbers",name:"Numbers to 100",icon:"🔢",desc:"Count, compare, order, place value"},
+ {id:"operations",name:"Basic Operations",icon:"➕",desc:"Addition, subtraction & grouping"},
+ {id:"fractions",name:"Fractions",icon:"🍕",desc:"Whole, half and quarter"},
+ {id:"money",name:"Money",icon:"💰",desc:"Malaysian RM and sen"},
+ {id:"time",name:"Time",icon:"🕒",desc:"Days, months and clock reading"},
+ {id:"measurement",name:"Measurement",icon:"📏",desc:"Length, mass and liquid volume"},
+ {id:"shapes",name:"Shapes & Space",icon:"🔷",desc:"2D and 3D shapes"},
+ {id:"data",name:"Data Management",icon:"📊",desc:"Sorting, pictographs and data"}
+];
+
+function $ (id){return document.getElementById(id)}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function topicId(title){
+  title=title.toLowerCase();
+  if(title.includes("number"))return"numbers";if(title.includes("operation")||title.includes("addition")||title.includes("subtraction"))return"operations";
+  if(title.includes("fraction"))return"fractions";if(title.includes("money"))return"money";if(title.includes("time"))return"time";
+  if(title.includes("measurement"))return"measurement";if(title.includes("shape"))return"shapes";if(title.includes("data"))return"data";return"operations"
+}
+function averageMastery(){
+  const v=Object.values(child.mastery||{});return v.length?Math.round(v.reduce((a,b)=>a+Number(b||0),0)/v.length):0
+}
+function accuracy(){return child.questions?Math.round(child.correct/child.questions*100):null}
+function level(){return Math.max(1,Math.floor(child.xp/500)+1)}
+function belt(){
+ const m=averageMastery();
+ if(m>=90)return["⚫","Black"];if(m>=80)return["🟤","Brown"];if(m>=60)return["🔵","Blue"];if(m>=40)return["🟢","Green"];if(m>=20)return["🟡","Yellow"];return["⚪","White"]
+}
+function ninjaTitle(l){
+ const names=["Rookie Ninja","Ninja Student","Shadow Ninja","Number Ninja","Math Warrior","Math Ninja","Elite Ninja","Ninja Master","Grand Ninja","Legendary Math Ninja"];
+ return names[Math.min(names.length-1,l-1)]
+}
+function showError(msg){$("authError").style.display="block";$("authError").textContent=msg}
+function clearError(){$("authError").style.display="none";$("authError").textContent=""}
+
+window.setAuthMode=function(mode){
+ authMode=mode;clearError();
+ $("loginTab").classList.toggle("active",mode==="login");$("registerTab").classList.toggle("active",mode==="register");
+ $("authName").style.display=mode==="register"?"block":"none";
+ $("authHeading").textContent=mode==="register"?"Create Parent Account":"Parent Login";
+ $("authSub").textContent=mode==="register"?"Create an account to save progress online.":"Sign in to save your child's progress.";
+ $("emailAuthBtn").textContent=mode==="register"?"CREATE ACCOUNT":"LOGIN";
+}
+window.emailAuth=async function(){
+ clearError();const email=$("authEmail").value.trim(),pass=$("authPassword").value,name=$("authName").value.trim();
+ if(!email||!pass)return showError("Please enter your email and password.");
+ try{
+   if(authMode==="register"){
+     if(!name)return showError("Please enter the parent name.");
+     const cred=await createUserWithEmailAndPassword(auth,email,pass);
+     await updateProfile(cred.user,{displayName:name});
+     await set(ref(db,`users/${cred.user.uid}/profile`),{name,email,createdAt:Date.now()});
+   }else await signInWithEmailAndPassword(auth,email,pass);
+ }catch(e){showError(friendlyAuthError(e.code))}
+}
+window.googleLogin=async function(){
+ clearError();try{
+   const cred=await signInWithPopup(auth,googleProvider);
+   await update(ref(db,`users/${cred.user.uid}/profile`),{name:cred.user.displayName||"Parent",email:cred.user.email||"",lastLoginAt:Date.now()});
+ }catch(e){showError(friendlyAuthError(e.code))}
+}
+window.guestLogin=function(){
+ isGuest=true;currentUser=null;loadLocal();enterApp()
+}
+window.logout=async function(){
+ if(isGuest){isGuest=false;localStorage.removeItem("ninjamath_guest_active");location.reload();return}
+ await signOut(auth);location.reload()
+}
+function friendlyAuthError(code){
+ const map={
+ "auth/invalid-credential":"Incorrect email or password.",
+ "auth/email-already-in-use":"This email is already registered.",
+ "auth/weak-password":"Password must be at least 6 characters.",
+ "auth/invalid-email":"Please enter a valid email address.",
+ "auth/popup-closed-by-user":"Google sign-in was cancelled.",
+ "auth/operation-not-allowed":"This sign-in method is not enabled in Firebase Authentication.",
+ "auth/unauthorized-domain":"This website domain is not authorised in Firebase Authentication."
+ };return map[code]||`Firebase error: ${code||"Unable to sign in"}`
+}
+
+onAuthStateChanged(auth,async user=>{
+ if(user){
+   isGuest=false;currentUser=user;
+   try{await loadCloud()}catch(e){console.error(e);toast("Firebase connected, but profile data could not be loaded.")}
+   enterApp()
+ }
+});
+
+async function loadCloud(){
+ const snap=await get(ref(db,`users/${currentUser.uid}/children/default`));
+ if(snap.exists()) child={...child,...snap.val(),mastery:{...child.mastery,...(snap.val().mastery||{})}};
+ else{
+   child.name="Adam";
+   await set(ref(db,`users/${currentUser.uid}/children/default`),child);
+ }
+}
+function loadLocal(){
+ const raw=localStorage.getItem("ninjamath_guest_child");
+ if(raw){try{const d=JSON.parse(raw);child={...child,...d,mastery:{...child.mastery,...(d.mastery||{})}}}catch{}}
+}
+async function saveProgress(session=null){
+ if(isGuest){
+   localStorage.setItem("ninjamath_guest_child",JSON.stringify(child));
+   return
+ }
+ if(!currentUser)return;
+ await set(ref(db,`users/${currentUser.uid}/children/default`),child);
+ await set(ref(db,`leaderboard/${currentUser.uid}`),{
+   name:child.name||"Math Ninja",xp:child.xp||0,level:level(),updatedAt:Date.now()
+ });
+ if(session){
+   const sref=push(ref(db,`users/${currentUser.uid}/sessions`));
+   await set(sref,session);
+ }
+}
+function enterApp(){
+ $("authScreen").classList.add("hidden");$("appRoot").classList.remove("hidden");
+ localStorage.setItem("ninjamath_guest_active",isGuest?"1":"0");
+ $("dbDot").classList.toggle("online",!isGuest);
+ $("dbText").textContent=isGuest?"Guest / Local":"Firebase";
+ $("accountLabel").textContent=isGuest?"Guest Mode":(currentUser?.email||"Firebase Account");
+ renderAll();loadLeaderboard()
+}
+function renderAll(){
+ renderWorlds();updateStats();renderParentBars()
+}
+function renderWorlds(){
+ const card=w=>`<button class="world" onclick="startQuiz('${w.name.replace(/'/g,"\\'")}')">
+ <div class="icon">${w.icon}</div><h3>${w.name}</h3><p>${w.desc}</p>
+ <div class="progress"><i style="width:${Number(child.mastery[w.id]||0)}%"></i></div><div class="pct">${Number(child.mastery[w.id]||0)}% mastery</div></button>`;
+ $("homeWorlds").innerHTML=worlds.slice(0,4).map(card).join("");$("allWorlds").innerHTML=worlds.map(card).join("")
+}
+function renderParentBars(){
+ $("parentBars").innerHTML=worlds.map(w=>`<div class="bar-row"><span>${w.name}</span><div class="bar"><i style="width:${Number(child.mastery[w.id]||0)}%"></i></div><span>${Number(child.mastery[w.id]||0)}%</span></div>`).join("")
+}
+window.showScreen=function(id){
+ document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");
+ document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.screen===id));
+ window.scrollTo({top:0,behavior:"smooth"});if(id==="ranking")loadLeaderboard()
+}
+function distractors(c,min=0,max=100){
+ const s=new Set([c]);while(s.size<4){let n=Math.max(min,Math.min(max,c+rand(-4,4)));if(n!==c)s.add(n)}return shuffle([...s])
+}
+function makeQuestion(topic){
+ if(topic.includes("Numbers")){
+  const t=rand(1,4);
+  if(t===1){let n=rand(1,98);return{topic:"Numbers to 100",id:"numbers",q:`What number comes after ${n}?`,a:n+1,opts:distractors(n+1,0,100)}}
+  if(t===2){let n=rand(10,99),tens=Math.floor(n/10);return{topic:"Place Value",id:"numbers",q:`${n} has how many tens?`,a:tens,opts:distractors(tens,0,10)}}
+  if(t===3){let a=rand(1,99),b=rand(1,99);while(a===b)b=rand(1,99);let c=Math.max(a,b);return{topic:"Compare Numbers",id:"numbers",q:"Which number is greater?",a:c,opts:shuffle([a,b,Math.max(0,c-1),Math.min(100,c+1)])}}
+  let n=rand(1,90);return{topic:"Number Sequence",id:"numbers",q:`${n}, ${n+1}, __, ${n+3}`,a:n+2,opts:distractors(n+2,0,100)}
+ }
+ if(topic.includes("Fractions"))return{topic:"Fractions",id:"fractions",q:"Which fraction means one-half?",a:"1/2",opts:shuffle(["1/2","1/4","1/3","1/5"])};
+ if(topic.includes("Money")){let a=rand(1,9),b=rand(1,9),c=a+b;return{topic:"Malaysian Money",id:"money",q:`You have RM${a} and receive RM${b} more. How much now?`,a:`RM${c}`,opts:distractors(c,0,20).map(v=>"RM"+v)}}
+ if(topic.includes("Time")){let days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],i=rand(0,5);return{topic:"Time",id:"time",q:`What day comes after ${days[i]}?`,a:days[i+1],opts:shuffle([days[i+1],days[(i+2)%7],days[Math.max(0,i-1)],days[6]])}}
+ if(topic.includes("Measurement"))return shuffle([
+   {topic:"Measurement",id:"measurement",q:"Which word means having more weight?",a:"Heavier",opts:shuffle(["Heavier","Shorter","Empty","Smaller"])},
+   {topic:"Measurement",id:"measurement",q:"Which word describes a container with no liquid?",a:"Empty",opts:shuffle(["Empty","Full","Heavy","Long"])}
+ ])[0];
+ if(topic.includes("Shapes"))return shuffle([
+   {topic:"Shapes & Space",id:"shapes",q:"Which 2D shape has 3 sides?",a:"Triangle",opts:shuffle(["Triangle","Square","Circle","Rectangle"])},
+   {topic:"Shapes & Space",id:"shapes",q:"Which 3D shape looks like a ball?",a:"Sphere",opts:shuffle(["Sphere","Cube","Cone","Cuboid"])}
+ ])[0];
+ if(topic.includes("Data"))return{topic:"Data Management",id:"data",visual:"🍎 🍎 🍎 🍎<br>🍌 🍌<br>🍇 🍇 🍇",q:"Which fruit appears the most?",a:"🍎 Apple",opts:shuffle(["🍎 Apple","🍌 Banana","🍇 Grapes","All are equal"])};
+ let a=rand(1,18),b=rand(1,12);
+ if(rand(0,1)&&a+b<=30){let c=a+b;return{topic:"Addition",id:"operations",q:`${a} + ${b} = ?`,a:c,opts:distractors(c,0,40)}}
+ if(a<b)[a,b]=[b,a];let c=a-b;return{topic:"Subtraction",id:"operations",q:`${a} − ${b} = ?`,a:c,opts:distractors(c,0,30)}
+}
+function buildQuiz(title){
+ if(/Mixed|Daily|Challenge/i.test(title)){
+   const p=["Numbers to 100","Basic Operations","Fractions","Money","Time","Measurement","Shapes & Space","Data Management"];
+   return Array.from({length:10},()=>makeQuestion(p[rand(0,p.length-1)]))
+ }
+ return Array.from({length:10},()=>makeQuestion(title))
+}
+window.startQuiz=function(title){
+ window.lastQuizTitle=title;questions=buildQuiz(title);quizIndex=0;quizCorrect=0;quizXp=0;streak=0;bestStreak=0;
+ $("quizTitle").textContent=title;showScreen("quiz");renderQuestion()
+}
+function renderQuestion(){
+ answered=false;const q=questions[quizIndex];$("qTopic").textContent=q.topic;$("qText").textContent=q.q;
+ $("qText").className="question"+(q.q.length>38?" small":"");$("qVisual").innerHTML=q.visual||"";
+ $("qBar").style.width=((quizIndex+1)/questions.length*100)+"%";$("quizXp").textContent=quizXp;$("feedback").textContent=`Question ${quizIndex+1} of ${questions.length}`;
+ $("answers").innerHTML=q.opts.map(o=>`<button class="answer" data-value="${escapeHtml(String(o))}">${escapeHtml(o)}</button>`).join("");
+ [...$("answers").children].forEach(btn=>btn.addEventListener("click",()=>answerQuestion(btn,btn.dataset.value)))
+}
+function answerQuestion(btn,val){
+ if(answered)return;answered=true;const q=questions[quizIndex],correct=String(q.a);
+ if(val===correct){
+   btn.classList.add("correct");quizCorrect++;streak++;bestStreak=Math.max(bestStreak,streak);
+   const gain=100+Math.min(50,streak*10);quizXp+=gain;$("feedback").textContent=`Correct! 🥷⭐ +${gain} XP · 🔥 ${streak} streak`;beep(730,.07);
+   if(streak>=3)confetti(10)
+ }else{
+   btn.classList.add("wrong");streak=0;[...document.querySelectorAll(".answer")].forEach(b=>{if(b.dataset.value===correct)b.classList.add("correct")});
+   $("feedback").textContent=`Almost! The correct answer is ${correct}.`;beep(260,.06)
+ }
+ setTimeout(()=>{quizIndex++;quizIndex<questions.length?renderQuestion():finishQuiz()},850)
+}
+async function finishQuiz(){
+ const acc=Math.round(quizCorrect/questions.length*100);child.xp+=quizXp;child.questions+=questions.length;child.correct+=quizCorrect;
+ const ids=[...new Set(questions.map(q=>q.id))];ids.forEach(id=>{
+   const attempted=questions.filter(q=>q.id===id).length;const correctFor=questions.filter((q,i)=>q.id===id).length; // session-level conservative update below
+   const old=Number(child.mastery[id]||0);const target=Math.round(acc);child.mastery[id]=Math.max(0,Math.min(100,Math.round(old*.75+target*.25)))
+ });
+ child.streak=Math.max(child.streak||1,1); // basic persistent streak placeholder
+ const session={title:window.lastQuizTitle,correct:quizCorrect,total:questions.length,accuracy:acc,xp:quizXp,bestStreak,createdAt:Date.now()};
+ try{await saveProgress(session)}catch(e){console.error(e);toast("Progress saved locally, but Firebase sync failed.")}
+ $("resultXp").textContent=`+${quizXp} XP`;$("resultCorrect").textContent=`${quizCorrect}/${questions.length}`;$("resultAccuracy").textContent=acc+"%";$("resultStreak").textContent="🔥 "+bestStreak;
+ renderAll();await loadLeaderboard();showScreen("result");confetti(22);beep(880,.1)
+}
+function updateStats(){
+ const acc=accuracy(),m=averageMastery(),lv=level(),[bi,bn]=belt(),xpInLevel=child.xp%500,pct=Math.round(xpInLevel/500*100);
+ $("homeXp").textContent=child.xp.toLocaleString();$("homeAccuracy").textContent=acc===null?"—":acc+"%";$("homeStreak").textContent="🔥 "+(child.streak||1);$("homeBelt").textContent=`${bi} ${bn}`;
+ $("profileName").textContent=child.name;$("profileLevel").textContent=`Level ${lv} · ${ninjaTitle(lv)}`;$("profileXp").textContent=child.xp.toLocaleString();$("profileXpBar").style.width=pct+"%";$("profileBelt").textContent=`${bi} ${bn} Ninja Belt`;
+ $("profileQuestions").textContent=child.questions;$("profileAccuracy").textContent=acc===null?"—":acc+"%";$("profileStreak").textContent="🔥 "+(child.streak||1);$("profileMastery").textContent=m+"%";
+ $("userPill").textContent=`🥷 ${child.name} · Lv ${lv}`;$("parentChildName").textContent=child.name;$("parentMastery").textContent=m+"%";$("parentAccuracy").textContent=acc===null?"—":acc+"%";$("parentQuestions").textContent=child.questions;$("parentXp").textContent=child.xp.toLocaleString()
+}
+window.loadLeaderboard=async function(){
+ const fallback=[
+   {name:"Amir",xp:4820},{name:"Sarah",xp:4550},{name:"Alya",xp:4310},{name:child.name,xp:child.xp,me:true},{name:"Hana",xp:3950}
+ ];
+ let rows=fallback;
+ if(!isGuest&&currentUser){
+   try{
+     const snap=await get(query(ref(db,"leaderboard"),orderByChild("xp"),limitToLast(20)));
+     if(snap.exists()){
+       rows=[];snap.forEach(s=>rows.push({...s.val(),uid:s.key,me:s.key===currentUser.uid}));
+       rows.sort((a,b)=>(b.xp||0)-(a.xp||0))
+     }
+   }catch(e){console.warn("Leaderboard read denied/fallback used",e)}
+ }
+ $("rankList").innerHTML=rows.sort((a,b)=>b.xp-a.xp).map((r,i)=>`<div class="rank-row ${r.me?"me":""}"><div class="rank-num">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div class="rank-name">${escapeHtml(r.name||"Math Ninja")}${r.me?" · You":""}</div><div class="rank-xp">${Number(r.xp||0).toLocaleString()} XP</div></div>`).join("");
+ const meIndex=rows.findIndex(r=>r.me);$("resultRank").textContent=meIndex>=0?`#${meIndex+1}`:"#—"
+}
+window.toggleSetting=function(btn,type){btn.classList.toggle("on");localStorage.setItem("ninjamath_"+type,btn.classList.contains("on")?"on":"off")}
+function beep(freq=600,dur=.08){
+ if(localStorage.getItem("ninjamath_sfx")==="off")return;
+ try{const ctx=new(window.AudioContext||window.webkitAudioContext)(),o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=freq;g.gain.value=.035;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>{o.stop();ctx.close()},dur*1000)}catch{}
+}
+window.toast=function(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1400)}
+function confetti(n=12){const box=$("confetti");for(let i=0;i<n;i++){let b=document.createElement("b");b.textContent=["⭐","🟨","✨","🥷"][rand(0,3)];b.style.left=rand(2,98)+"%";b.style.animationDelay=(Math.random()*.25)+"s";box.appendChild(b);setTimeout(()=>b.remove(),1800)}}
+
+$("sfxToggle").classList.toggle("on",localStorage.getItem("ninjamath_sfx")!=="off");
+$("musicToggle").classList.toggle("on",localStorage.getItem("ninjamath_music")==="on");
+</script>
+</body>
+</html>
