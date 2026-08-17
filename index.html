@@ -1,451 +1,1071 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
 
-<meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
 
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#111111">
 
-<title>NinjaMath</title>
+    <title>NinjaMath</title>
 
-<link rel="stylesheet" href="style.css">
-
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- ===================== -->
-<!-- LOGIN -->
-<!-- ===================== -->
+<!-- =========================================
+     LOGIN / REGISTER
+========================================= -->
 
 <section id="authPage" class="page active">
 
     <div class="auth-card">
 
-        <div class="logo-area">
-            <div class="logo-placeholder">🥷🧮</div>
-            <h1>NinjaMath</h1>
-            <p>Train Your Brain. Master Your Math.</p>
+        <div class="brand-logo">
+            <div class="ninja-logo">🥷🧮</div>
+
+            <h1>
+                Ninja<span>Math</span>
+            </h1>
+
+            <p class="brand-tagline">
+                Train Your Brain. Master Your Math.
+            </p>
         </div>
+
+
+        <div class="auth-title">
+            <h2>Parent Login</h2>
+
+            <p>
+                Sign in to start your child's NinjaMath journey.
+            </p>
+        </div>
+
+
+        <label for="email">
+            Email
+        </label>
 
         <input
             id="email"
             type="email"
-            placeholder="Parent Email">
+            placeholder="parent@email.com"
+            autocomplete="email"
+        >
+
+
+        <label for="password">
+            Password
+        </label>
 
         <input
             id="password"
             type="password"
-            placeholder="Password">
+            placeholder="Minimum 6 characters"
+            autocomplete="current-password"
+        >
+
 
         <button
             id="loginBtn"
-            class="primary-btn">
+            class="primary-btn full-btn"
+        >
             LOGIN
         </button>
 
+
         <button
             id="registerBtn"
-            class="secondary-btn">
-            CREATE ACCOUNT
+            class="secondary-btn full-btn"
+        >
+            CREATE NEW ACCOUNT
         </button>
 
-        <p
-            id="authMessage"
-            class="message">
-        </p>
+
+        <p id="authMessage" class="message"></p>
 
     </div>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- CHILD SELECT -->
-<!-- ===================== -->
+
+<!-- =========================================
+     CHILD SELECTION
+========================================= -->
 
 <section id="childPage" class="page">
 
-    <header>
+    <div class="page-container">
 
-        <div>
-            <h2>Choose Your Ninja</h2>
-            <p>Who's training today?</p>
+        <header class="top-header">
+
+            <div>
+                <p class="eyebrow">
+                    NINJAMATH FAMILY
+                </p>
+
+                <h1>
+                    Choose Your Ninja
+                </h1>
+
+                <p>
+                    Who is training today?
+                </p>
+            </div>
+
+
+            <button
+                id="logoutBtn"
+                class="small-dark-btn"
+            >
+                Logout
+            </button>
+
+        </header>
+
+
+        <div
+            id="childrenList"
+            class="children-grid"
+        ></div>
+
+
+        <div class="add-child-card">
+
+            <div class="add-child-icon">
+                🥷
+            </div>
+
+            <div class="add-child-content">
+
+                <h2>
+                    Add a New Ninja
+                </h2>
+
+                <p>
+                    Create a profile for your child.
+                </p>
+
+
+                <div class="add-child-form">
+
+                    <input
+                        id="childName"
+                        type="text"
+                        maxlength="20"
+                        placeholder="Ninja nickname"
+                    >
+
+                    <button
+                        id="addChildBtn"
+                        class="primary-btn"
+                    >
+                        + ADD NINJA
+                    </button>
+
+                </div>
+
+
+                <p
+                    id="childMessage"
+                    class="message"
+                ></p>
+
+            </div>
+
         </div>
-
-        <button id="logoutBtn">
-            Logout
-        </button>
-
-    </header>
-
-    <div
-        id="childrenList"
-        class="children-grid">
-    </div>
-
-    <div class="add-child-card">
-
-        <h3>Add Child</h3>
-
-        <input
-            id="childName"
-            placeholder="Ninja nickname">
-
-        <button
-            id="addChildBtn"
-            class="primary-btn">
-            + ADD NINJA
-        </button>
 
     </div>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- STUDENT DASHBOARD -->
-<!-- ===================== -->
+
+<!-- =========================================
+     STUDENT HOME
+========================================= -->
 
 <section id="homePage" class="page">
 
-<header class="main-header">
+    <div class="page-container">
 
-    <div>
-        <small>WELCOME BACK</small>
-        <h2 id="welcomeName">
-            Ninja!
-        </h2>
+        <header class="student-header">
+
+            <div class="student-profile">
+
+                <div class="mini-avatar">
+                    🥷
+                </div>
+
+                <div>
+                    <p class="eyebrow">
+                        WELCOME BACK
+                    </p>
+
+                    <h2 id="welcomeName">
+                        Ninja!
+                    </h2>
+                </div>
+
+            </div>
+
+
+            <div class="header-actions">
+
+                <button
+                    id="soundBtn"
+                    class="sound-btn"
+                    title="Toggle sound"
+                >
+                    🔊
+                </button>
+
+                <div class="xp-pill">
+                    ⚡
+                    <span id="xpDisplay">0</span>
+                    XP
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <div class="hero-badge">
+                    ⚡ DAILY TRAINING
+                </div>
+
+
+                <h1>
+                    Ready for your next
+                    <span>Math Mission?</span>
+                </h1>
+
+
+                <p>
+                    Train your skills, earn XP and become
+                    a NinjaMath Master!
+                </p>
+
+
+                <div class="hero-buttons">
+
+                    <button
+                        id="startTrainingBtn"
+                        class="primary-btn hero-btn"
+                    >
+                        START RANDOM TRAINING ⚡
+                    </button>
+
+
+                    <button
+                        id="switchChildBtn"
+                        class="outline-light-btn"
+                    >
+                        Switch Ninja
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-mascot">
+                🥷🧮
+            </div>
+
+        </section>
+
+
+
+        <!-- TOPICS -->
+
+        <div class="section-heading">
+
+            <div>
+                <p class="eyebrow">
+                    NINJA TRAINING
+                </p>
+
+                <h2>
+                    Choose Your Training
+                </h2>
+            </div>
+
+        </div>
+
+
+        <div class="topic-grid">
+
+            <button
+                class="topic-card"
+                data-topic="numbers"
+            >
+                <div class="topic-icon">
+                    🔢
+                </div>
+
+                <div>
+                    <h3>
+                        Number Ninja
+                    </h3>
+
+                    <p>
+                        Numbers up to 100
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="operations"
+            >
+                <div class="topic-icon">
+                    ➕
+                </div>
+
+                <div>
+                    <h3>
+                        Operation Ninja
+                    </h3>
+
+                    <p>
+                        Addition & subtraction
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="fractions"
+            >
+                <div class="topic-icon">
+                    🍕
+                </div>
+
+                <div>
+                    <h3>
+                        Fraction Ninja
+                    </h3>
+
+                    <p>
+                        Halves & quarters
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="money"
+            >
+                <div class="topic-icon">
+                    💰
+                </div>
+
+                <div>
+                    <h3>
+                        Money Ninja
+                    </h3>
+
+                    <p>
+                        Ringgit & Sen
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="time"
+            >
+                <div class="topic-icon">
+                    ⏰
+                </div>
+
+                <div>
+                    <h3>
+                        Time Ninja
+                    </h3>
+
+                    <p>
+                        Time & daily routine
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="measurement"
+            >
+                <div class="topic-icon">
+                    📏
+                </div>
+
+                <div>
+                    <h3>
+                        Measurement Ninja
+                    </h3>
+
+                    <p>
+                        Length, mass & liquid
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="space"
+            >
+                <div class="topic-icon">
+                    🔺
+                </div>
+
+                <div>
+                    <h3>
+                        Shape Ninja
+                    </h3>
+
+                    <p>
+                        Shapes & space
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+
+
+            <button
+                class="topic-card"
+                data-topic="data"
+            >
+                <div class="topic-icon">
+                    📊
+                </div>
+
+                <div>
+                    <h3>
+                        Data Ninja
+                    </h3>
+
+                    <p>
+                        Read simple data
+                    </p>
+                </div>
+
+                <span class="topic-arrow">
+                    →
+                </span>
+            </button>
+
+        </div>
+
     </div>
 
-    <div class="xp-box">
-        ⚡ <span id="xpDisplay">0</span> XP
-    </div>
-
-</header>
 
 
-<div class="hero">
+    <!-- BOTTOM NAV -->
 
-    <div>
+    <nav class="bottom-nav">
 
-        <span class="tag">
-            DAILY TRAINING
-        </span>
-
-        <h1>
-            Ready for your next
-            <span>Math Mission?</span>
-        </h1>
-
-        <button
-            id="startTrainingBtn"
-            class="primary-btn">
-            START TRAINING ⚡
+        <button id="navHome" class="nav-item active-nav">
+            <span>🏠</span>
+            Home
         </button>
 
-    </div>
+        <button id="navLeaderboard" class="nav-item">
+            <span>🏆</span>
+            Ranking
+        </button>
 
-    <div class="hero-ninja">
-        🥷🧮
-    </div>
+        <button id="navProgress" class="nav-item">
+            <span>📈</span>
+            Progress
+        </button>
 
-</div>
+        <button id="navParent" class="nav-item">
+            <span>👨‍👩‍👧</span>
+            Parents
+        </button>
 
-
-<h2>Choose Your Training</h2>
-
-
-<div class="topic-grid">
-
-    <button data-topic="numbers" class="topic-card">
-        <span>🔢</span>
-        <strong>Number Ninja</strong>
-        <small>Numbers up to 100</small>
-    </button>
-
-    <button data-topic="operations" class="topic-card">
-        <span>➕</span>
-        <strong>Operation Ninja</strong>
-        <small>Add & subtract</small>
-    </button>
-
-    <button data-topic="fractions" class="topic-card">
-        <span>🍕</span>
-        <strong>Fraction Ninja</strong>
-        <small>Parts of a whole</small>
-    </button>
-
-    <button data-topic="money" class="topic-card">
-        <span>💰</span>
-        <strong>Money Ninja</strong>
-        <small>Ringgit & Sen</small>
-    </button>
-
-    <button data-topic="time" class="topic-card">
-        <span>⏰</span>
-        <strong>Time Ninja</strong>
-        <small>Learn time</small>
-    </button>
-
-    <button data-topic="measurement" class="topic-card">
-        <span>📏</span>
-        <strong>Measurement Ninja</strong>
-        <small>Measure the world</small>
-    </button>
-
-    <button data-topic="space" class="topic-card">
-        <span>🔺</span>
-        <strong>Shape Ninja</strong>
-        <small>Shapes & space</small>
-    </button>
-
-    <button data-topic="data" class="topic-card">
-        <span>📊</span>
-        <strong>Data Ninja</strong>
-        <small>Read information</small>
-    </button>
-
-</div>
-
-
-<nav class="bottom-nav">
-
-    <button id="navHome">
-        🏠
-        <span>Home</span>
-    </button>
-
-    <button id="navLeaderboard">
-        🏆
-        <span>Ranking</span>
-    </button>
-
-    <button id="navProgress">
-        📈
-        <span>Progress</span>
-    </button>
-
-    <button id="navParent">
-        👨‍👩‍👧
-        <span>Parents</span>
-    </button>
-
-</nav>
+    </nav>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- QUIZ -->
-<!-- ===================== -->
+
+<!-- =========================================
+     QUIZ
+========================================= -->
 
 <section id="quizPage" class="page">
 
-<div class="quiz-wrapper">
+    <div class="quiz-wrapper">
 
-    <div class="quiz-header">
+        <div class="quiz-top">
 
-        <button id="exitQuiz">
-            ✕
-        </button>
+            <button
+                id="exitQuiz"
+                class="circle-btn"
+            >
+                ✕
+            </button>
 
-        <div class="progress-container">
-            <div id="progressBar"></div>
+
+            <div class="quiz-progress">
+
+                <div
+                    id="progressBar"
+                    class="progress-bar"
+                ></div>
+
+            </div>
+
+
+            <div class="quiz-score">
+                ⭐
+                <span id="quizScore">
+                    0
+                </span>
+            </div>
+
         </div>
 
-        <div>
-            ⭐ <span id="quizScore">0</span>
+
+
+        <div class="quiz-info">
+
+            <span id="quizTopic">
+                Number Ninja
+            </span>
+
+            <span id="questionNumber">
+                Question 1 / 10
+            </span>
+
+        </div>
+
+
+
+        <div class="quiz-card">
+
+            <div class="question-ninja">
+                🥷
+            </div>
+
+
+            <p class="question-label">
+                SOLVE THIS MISSION
+            </p>
+
+
+            <h1 id="questionText">
+                5 + 3 = ?
+            </h1>
+
+
+            <div
+                id="answersContainer"
+                class="answers-grid"
+            ></div>
+
+
+            <div
+                id="answerFeedback"
+                class="answer-feedback"
+            ></div>
+
+        </div>
+
+
+
+        <div class="streak-box">
+
+            🔥 Streak:
+
+            <strong id="streakDisplay">
+                0
+            </strong>
+
         </div>
 
     </div>
-
-
-    <div class="quiz-card">
-
-        <div id="questionNumber">
-            QUESTION 1 / 10
-        </div>
-
-        <h2 id="questionText">
-            5 + 3 = ?
-        </h2>
-
-        <div
-            id="answersContainer"
-            class="answers">
-        </div>
-
-    </div>
-
-</div>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- RESULT -->
-<!-- ===================== -->
+
+<!-- =========================================
+     RESULT
+========================================= -->
 
 <section id="resultPage" class="page">
 
-<div class="result-card">
+    <div class="result-wrapper">
 
-    <div class="trophy">
-        🏆
-    </div>
+        <div class="result-card">
 
-    <h1>
-        MISSION COMPLETE!
-    </h1>
+            <div class="result-trophy">
+                🏆
+            </div>
 
-    <div id="stars">
-        ⭐⭐⭐
-    </div>
 
-    <div class="score-circle">
-        <span id="finalScore">0</span>
-        <small>SCORE</small>
-    </div>
+            <p class="eyebrow">
+                TRAINING COMPLETE
+            </p>
 
-    <div class="result-stats">
 
-        <div>
-            <strong id="correctResult">0</strong>
-            <span>Correct</span>
+            <h1>
+                Mission Complete!
+            </h1>
+
+
+            <div
+                id="stars"
+                class="result-stars"
+            >
+                ⭐⭐⭐
+            </div>
+
+
+            <div class="score-circle">
+
+                <strong id="finalScore">
+                    100
+                </strong>
+
+                <span>
+                    SCORE
+                </span>
+
+            </div>
+
+
+
+            <div class="result-grid">
+
+                <div class="result-stat">
+
+                    <span>
+                        ✅
+                    </span>
+
+                    <strong id="correctResult">
+                        10/10
+                    </strong>
+
+                    <small>
+                        Correct
+                    </small>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        🎯
+                    </span>
+
+                    <strong id="accuracyResult">
+                        100%
+                    </strong>
+
+                    <small>
+                        Accuracy
+                    </small>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        ⚡
+                    </span>
+
+                    <strong id="xpResult">
+                        +100
+                    </strong>
+
+                    <small>
+                        XP Earned
+                    </small>
+
+                </div>
+
+
+                <div class="result-stat">
+
+                    <span>
+                        🔥
+                    </span>
+
+                    <strong id="bestStreakResult">
+                        10
+                    </strong>
+
+                    <small>
+                        Best Streak
+                    </small>
+
+                </div>
+
+            </div>
+
+
+
+            <div
+                id="masteryMessage"
+                class="mastery-message"
+            ></div>
+
+
+
+            <button
+                id="playAgainBtn"
+                class="primary-btn full-btn"
+            >
+                TRAIN AGAIN
+            </button>
+
+
+            <button
+                id="resultRankingBtn"
+                class="dark-btn full-btn"
+            >
+                🏆 VIEW RANKING
+            </button>
+
+
+            <button
+                id="resultHomeBtn"
+                class="secondary-btn full-btn"
+            >
+                BACK TO HOME
+            </button>
+
         </div>
 
-        <div>
-            <strong id="accuracyResult">0%</strong>
-            <span>Accuracy</span>
-        </div>
-
-        <div>
-            <strong id="xpResult">0</strong>
-            <span>XP</span>
-        </div>
-
     </div>
-
-    <button
-        id="playAgainBtn"
-        class="primary-btn">
-        TRAIN AGAIN
-    </button>
-
-    <button
-        id="resultHomeBtn"
-        class="secondary-btn">
-        HOME
-    </button>
-
-</div>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- LEADERBOARD -->
-<!-- ===================== -->
+
+<!-- =========================================
+     LEADERBOARD
+========================================= -->
 
 <section id="leaderboardPage" class="page">
 
-<header>
+    <div class="page-container narrow-container">
 
-    <button id="leaderboardBack">
-        ←
-    </button>
+        <header class="subpage-header">
 
-    <h2>🏆 Ninja Ranking</h2>
+            <button
+                id="leaderboardBack"
+                class="back-btn"
+            >
+                ←
+            </button>
 
-</header>
 
-<div id="leaderboardList"></div>
+            <div>
+                <p class="eyebrow">
+                    NINJA CHAMPIONS
+                </p>
+
+                <h1>
+                    🏆 Ninja Ranking
+                </h1>
+            </div>
+
+        </header>
+
+
+        <div class="ranking-note">
+
+            Earn XP by completing Math Missions.
+
+        </div>
+
+
+        <div
+            id="leaderboardList"
+            class="leaderboard-list"
+        ></div>
+
+    </div>
 
 </section>
 
 
-<!-- ===================== -->
-<!-- PARENT -->
-<!-- ===================== -->
+
+<!-- =========================================
+     PROGRESS
+========================================= -->
+
+<section id="progressPage" class="page">
+
+    <div class="page-container narrow-container">
+
+        <header class="subpage-header">
+
+            <button
+                id="progressBack"
+                class="back-btn"
+            >
+                ←
+            </button>
+
+
+            <div>
+                <p class="eyebrow">
+                    MY TRAINING
+                </p>
+
+                <h1>
+                    📈 My Progress
+                </h1>
+            </div>
+
+        </header>
+
+
+
+        <div class="progress-summary">
+
+            <div class="summary-card">
+
+                <small>
+                    TOTAL XP
+                </small>
+
+                <strong id="progressXP">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <small>
+                    MISSIONS
+                </small>
+
+                <strong id="progressMissions">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <small>
+                    ACCURACY
+                </small>
+
+                <strong id="progressAccuracy">
+                    0%
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <h2 class="progress-title">
+            Topic Mastery
+        </h2>
+
+
+        <div
+            id="topicProgressList"
+            class="topic-progress-list"
+        ></div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================
+     PARENT DASHBOARD
+========================================= -->
 
 <section id="parentPage" class="page">
 
-<header>
+    <div class="page-container narrow-container">
 
-    <button id="parentBack">
-        ←
-    </button>
+        <header class="subpage-header">
 
-    <h2>Parent Dashboard</h2>
+            <button
+                id="parentBack"
+                class="back-btn"
+            >
+                ←
+            </button>
 
-</header>
 
-<div class="parent-summary">
+            <div>
+                <p class="eyebrow">
+                    PARENT AREA
+                </p>
 
-    <div class="stat-card">
+                <h1>
+                    👨‍👩‍👧 Parent Dashboard
+                </h1>
+            </div>
 
-        <small>TOTAL XP</small>
+        </header>
 
-        <strong id="parentXP">
-            0
-        </strong>
+
+
+        <div class="parent-child-header">
+
+            <div class="parent-avatar">
+                🥷
+            </div>
+
+            <div>
+
+                <small>
+                    Viewing progress for
+                </small>
+
+                <h2 id="parentChildName">
+                    Ninja
+                </h2>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="parent-summary">
+
+            <div class="stat-card">
+
+                <small>
+                    TOTAL XP
+                </small>
+
+                <strong id="parentXP">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <small>
+                    QUIZZES
+                </small>
+
+                <strong id="parentQuizzes">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <small>
+                    AVERAGE
+                </small>
+
+                <strong id="parentAverage">
+                    0%
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="parent-section">
+
+            <h2>
+                Recent Training
+            </h2>
+
+
+            <div
+                id="recentAttempts"
+                class="recent-attempts"
+            ></div>
+
+        </div>
 
     </div>
-
-    <div class="stat-card">
-
-        <small>QUIZZES</small>
-
-        <strong id="parentQuizzes">
-            0
-        </strong>
-
-    </div>
-
-    <div class="stat-card">
-
-        <small>AVERAGE</small>
-
-        <strong id="parentAverage">
-            0%
-        </strong>
-
-    </div>
-
-</div>
-
-<h3>Recent Training</h3>
-
-<div id="recentAttempts"></div>
 
 </section>
 
 
-<audio
-    id="correctSound"
-    src="assets/sounds/correct.mp3">
-</audio>
-
-<audio
-    id="wrongSound"
-    src="assets/sounds/wrong.mp3">
-</audio>
-
-<audio
-    id="levelSound"
-    src="assets/sounds/level-up.mp3">
-</audio>
-
 
 <script
-type="module"
-src="app.js">
-</script>
+    type="module"
+    src="app.js"
+></script>
 
 </body>
-
 </html>
