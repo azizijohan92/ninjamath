@@ -908,3 +908,80 @@ input:focus {
     }
 
 }
+
+/* =========================
+   LEADERBOARD & PARENT
+========================= */
+
+.ranking-row,
+.attempt-row {
+
+    max-width: 700px;
+
+    margin: 10px auto;
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 18px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+}
+
+.ranking-row:first-child {
+
+    border: 3px solid var(--yellow);
+
+    transform: scale(1.02);
+
+}
+
+.parent-summary {
+
+    max-width: 700px;
+
+    margin: 30px auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            1fr
+        );
+
+    gap: 12px;
+
+}
+
+.stat-card {
+
+    background: var(--black);
+
+    color: white;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    text-align: center;
+
+}
+
+.stat-card strong {
+
+    display: block;
+
+    color: var(--yellow);
+
+    margin-top: 8px;
+
+    font-size: 28px;
+
+}
