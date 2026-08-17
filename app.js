@@ -1,3 +1,7 @@
+/* =========================================
+   FIREBASE
+========================================= */
+
 import {
     auth,
     db
@@ -13,8 +17,7 @@ import {
     onAuthStateChanged
 
 }
-from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-auth.js";
 
 
 import {
@@ -24,17 +27,16 @@ import {
     addDoc,
     setDoc,
     getDocs,
+    updateDoc,
     query,
     where,
     orderBy,
     limit,
-    updateDoc,
     increment,
     serverTimestamp
 
 }
-from
-"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+from "https://www.gstatic.com/firebasejs/12.17.1/firebase-firestore.js";
 
 
 import {
@@ -43,192 +45,799 @@ import {
 from "./questions.js";
 
 
-// ========================
-// GLOBAL STATE
-// ========================
 
-let currentUser = null;
+/* =========================================
+   APP STATE
+========================================= */
 
-let currentChild = null;
+let currentUser =
+    null;
+
+
+let currentChild =
+    null;
+
 
 let currentTopic =
     "numbers";
 
-let questions = [];
 
-let questionIndex = 0;
-
-let correctAnswers = 0;
-
-let score = 0;
-
-let streak = 0;
-
-let bestStreak = 0;
+let questions =
+    [];
 
 
-// ========================
-// HELPERS
-// ========================
-
-const $ =
-    id =>
-        document.getElementById(id);
+let questionIndex =
+    0;
 
 
-function showPage(id) {
+let correctAnswers =
+    0;
+
+
+let score =
+    0;
+
+
+let streak =
+    0;
+
+
+let bestStreak =
+    0;
+
+
+let answeringLocked =
+    false;
+
+
+let soundEnabled =
+    true;
+
+
+let audioContext =
+    null;
+
+
+
+/* =========================================
+   TOPIC INFORMATION
+========================================= */
+
+const topicNames = {
+
+    numbers:
+        "Number Ninja",
+
+    operations:
+        "Operation Ninja",
+
+    fractions:
+        "Fraction Ninja",
+
+    money:
+        "Money Ninja",
+
+    time:
+        "Time Ninja",
+
+    measurement:
+        "Measurement Ninja",
+
+    space:
+        "Shape Ninja",
+
+    data:
+        "Data Ninja"
+
+};
+
+
+
+const topicIcons = {
+
+    numbers:
+        "🔢",
+
+    operations:
+        "➕",
+
+    fractions:
+        "🍕",
+
+    money:
+        "💰",
+
+    time:
+        "⏰",
+
+    measurement:
+        "📏",
+
+    space:
+        "🔺",
+
+    data:
+        "📊"
+
+};
+
+
+
+/* =========================================
+   DOM HELPER
+========================================= */
+
+function $(
+    id
+) {
+
+    return document.getElementById(
+        id
+    );
+
+}
+
+
+
+/* =========================================
+   PAGE CONTROL
+========================================= */
+
+function showPage(
+    pageId
+) {
 
     document
-        .querySelectorAll(".page")
-        .forEach(page =>
-            page.classList.remove(
-                "active"
-            )
+        .querySelectorAll(
+            ".page"
+        )
+        .forEach(
+            page => {
+
+                page.classList.remove(
+                    "active"
+                );
+
+            }
         );
 
-    $(id)
-        .classList
-        .add(
+
+    const page =
+        $(
+            pageId
+        );
+
+
+    if (
+        page
+    ) {
+
+        page.classList.add(
             "active"
         );
 
+    }
+
+
+    window.scrollTo(
+        {
+            top:
+                0,
+
+            behavior:
+                "smooth"
+        }
+    );
+
 }
 
 
-function playSound(id) {
 
-    const sound = $(id);
+/* =========================================
+   SIMPLE SOUND ENGINE
+========================================= */
 
-    if (!sound)
+function getAudioContext() {
+
+    if (
+        !audioContext
+    ) {
+
+        const AudioContext =
+            window.AudioContext
+            ||
+            window.webkitAudioContext;
+
+
+        if (
+            AudioContext
+        ) {
+
+            audioContext =
+                new AudioContext();
+
+        }
+
+    }
+
+
+    return audioContext;
+
+}
+
+
+
+function tone(
+    frequency,
+    duration,
+    type = "sine",
+    volume = 0.08,
+    delay = 0
+) {
+
+    if (
+        !soundEnabled
+    ) {
+
         return;
 
-    sound.currentTime = 0;
+    }
 
-    sound
-        .play()
-        .catch(() => {});
+
+    const ctx =
+        getAudioContext();
+
+
+    if (
+        !ctx
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        ctx.state ===
+        "suspended"
+    ) {
+
+        ctx.resume();
+
+    }
+
+
+    const oscillator =
+        ctx.createOscillator();
+
+
+    const gain =
+        ctx.createGain();
+
+
+    oscillator.type =
+        type;
+
+
+    oscillator.frequency.value =
+        frequency;
+
+
+    gain.gain.value =
+        volume;
+
+
+    oscillator.connect(
+        gain
+    );
+
+
+    gain.connect(
+        ctx.destination
+    );
+
+
+    const start =
+        ctx.currentTime +
+        delay;
+
+
+    oscillator.start(
+        start
+    );
+
+
+    gain.gain.setValueAtTime(
+        volume,
+        start
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        start + duration
+    );
+
+
+    oscillator.stop(
+        start + duration
+    );
 
 }
 
 
-// ========================
-// AUTH
-// ========================
+
+function playCorrectSound() {
+
+    tone(
+        523,
+        0.12,
+        "sine",
+        0.08,
+        0
+    );
+
+
+    tone(
+        659,
+        0.15,
+        "sine",
+        0.08,
+        0.08
+    );
+
+
+    tone(
+        784,
+        0.18,
+        "sine",
+        0.08,
+        0.16
+    );
+
+}
+
+
+
+function playWrongSound() {
+
+    tone(
+        220,
+        0.18,
+        "square",
+        0.035,
+        0
+    );
+
+
+    tone(
+        180,
+        0.22,
+        "square",
+        0.03,
+        0.12
+    );
+
+}
+
+
+
+function playCompleteSound() {
+
+    tone(
+        523,
+        0.15,
+        "triangle",
+        0.08,
+        0
+    );
+
+
+    tone(
+        659,
+        0.15,
+        "triangle",
+        0.08,
+        0.12
+    );
+
+
+    tone(
+        784,
+        0.15,
+        "triangle",
+        0.08,
+        0.24
+    );
+
+
+    tone(
+        1046,
+        0.35,
+        "triangle",
+        0.08,
+        0.36
+    );
+
+}
+
+
+
+/* =========================================
+   SOUND BUTTON
+========================================= */
+
+$("soundBtn")
+    .addEventListener(
+        "click",
+        () => {
+
+            soundEnabled =
+                !soundEnabled;
+
+
+            $("soundBtn")
+                .textContent =
+                soundEnabled
+                ? "🔊"
+                : "🔇";
+
+
+            if (
+                soundEnabled
+            ) {
+
+                playCorrectSound();
+
+            }
+
+        }
+    );
+
+
+
+/* =========================================
+   REGISTER
+========================================= */
 
 $("registerBtn")
-.addEventListener(
-    "click",
-    async () => {
+    .addEventListener(
+        "click",
+        async () => {
 
-        const email =
-            $("email")
-            .value
-            .trim();
-
-        const password =
-            $("password")
-            .value;
-
-        try {
-
-            const credential =
-                await createUserWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-            await setDoc(
-                doc(
-                    db,
-                    "users",
-                    credential.user.uid
-                ),
-                {
-
-                    email:
-                        credential
-                        .user
-                        .email,
-
-                    createdAt:
-                        serverTimestamp()
-
-                }
-            );
-
-        }
-        catch(error) {
-
-            $("authMessage")
-                .textContent =
-                error.message;
-
-        }
-
-    }
-);
-
-
-$("loginBtn")
-.addEventListener(
-    "click",
-    async () => {
-
-        try {
-
-            await signInWithEmailAndPassword(
-
-                auth,
-
+            const email =
                 $("email")
                     .value
-                    .trim(),
+                    .trim();
 
+
+            const password =
                 $("password")
-                    .value
+                    .value;
 
-            );
-
-        }
-        catch(error) {
 
             $("authMessage")
                 .textContent =
-                "Login failed. Please check your details.";
+                "";
+
+
+            if (
+                !email
+                ||
+                !password
+            ) {
+
+                $("authMessage")
+                    .textContent =
+                    "Please enter your email and password.";
+
+                return;
+
+            }
+
+
+            if (
+                password.length <
+                6
+            ) {
+
+                $("authMessage")
+                    .textContent =
+                    "Password must contain at least 6 characters.";
+
+                return;
+
+            }
+
+
+            try {
+
+                $("registerBtn")
+                    .disabled =
+                    true;
+
+
+                $("registerBtn")
+                    .textContent =
+                    "CREATING ACCOUNT...";
+
+
+                const credential =
+                    await createUserWithEmailAndPassword(
+
+                        auth,
+
+                        email,
+
+                        password
+
+                    );
+
+
+                await setDoc(
+
+                    doc(
+                        db,
+                        "users",
+                        credential.user.uid
+                    ),
+
+                    {
+
+                        email:
+                            credential.user.email,
+
+                        createdAt:
+                            serverTimestamp()
+
+                    }
+
+                );
+
+
+            }
+            catch (
+                error
+            ) {
+
+                console.error(
+                    error
+                );
+
+
+                $("authMessage")
+                    .textContent =
+                    friendlyAuthError(
+                        error.code
+                    );
+
+            }
+            finally {
+
+                $("registerBtn")
+                    .disabled =
+                    false;
+
+
+                $("registerBtn")
+                    .textContent =
+                    "CREATE NEW ACCOUNT";
+
+            }
 
         }
+    );
+
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+$("loginBtn")
+    .addEventListener(
+        "click",
+        async () => {
+
+            const email =
+                $("email")
+                    .value
+                    .trim();
+
+
+            const password =
+                $("password")
+                    .value;
+
+
+            $("authMessage")
+                .textContent =
+                "";
+
+
+            if (
+                !email
+                ||
+                !password
+            ) {
+
+                $("authMessage")
+                    .textContent =
+                    "Please enter your email and password.";
+
+                return;
+
+            }
+
+
+            try {
+
+                $("loginBtn")
+                    .disabled =
+                    true;
+
+
+                $("loginBtn")
+                    .textContent =
+                    "LOGGING IN...";
+
+
+                await signInWithEmailAndPassword(
+
+                    auth,
+
+                    email,
+
+                    password
+
+                );
+
+
+            }
+            catch (
+                error
+            ) {
+
+                console.error(
+                    error
+                );
+
+
+                $("authMessage")
+                    .textContent =
+                    friendlyAuthError(
+                        error.code
+                    );
+
+            }
+            finally {
+
+                $("loginBtn")
+                    .disabled =
+                    false;
+
+
+                $("loginBtn")
+                    .textContent =
+                    "LOGIN";
+
+            }
+
+        }
+    );
+
+
+
+/* =========================================
+   AUTH ERROR
+========================================= */
+
+function friendlyAuthError(
+    code
+) {
+
+    if (
+        code ===
+        "auth/email-already-in-use"
+    ) {
+
+        return "This email already has a NinjaMath account.";
 
     }
-);
 
+
+    if (
+        code ===
+        "auth/invalid-email"
+    ) {
+
+        return "Please enter a valid email address.";
+
+    }
+
+
+    if (
+        code ===
+        "auth/weak-password"
+    ) {
+
+        return "Please use a stronger password.";
+
+    }
+
+
+    if (
+        code ===
+        "auth/invalid-credential"
+    ) {
+
+        return "Incorrect email or password.";
+
+    }
+
+
+    return "Something went wrong. Please try again.";
+
+}
+
+
+
+/* =========================================
+   LOGOUT
+========================================= */
 
 $("logoutBtn")
-.addEventListener(
-    "click",
-    () =>
-        signOut(auth)
-);
+    .addEventListener(
+        "click",
+        async () => {
+
+            await signOut(
+                auth
+            );
+
+        }
+    );
 
 
-// ========================
-// AUTH STATE
-// ========================
+
+/* =========================================
+   AUTH STATE
+========================================= */
 
 onAuthStateChanged(
+
     auth,
+
     async user => {
 
-        if (user) {
+        if (
+            user
+        ) {
 
             currentUser =
                 user;
 
-            await loadChildren();
 
-            showPage(
-                "childPage"
-            );
+            try {
+
+                await loadChildren();
+
+
+                showPage(
+                    "childPage"
+                );
+
+            }
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "Unable to load children:",
+                    error
+                );
+
+            }
 
         }
         else {
@@ -236,8 +845,10 @@ onAuthStateChanged(
             currentUser =
                 null;
 
+
             currentChild =
                 null;
+
 
             showPage(
                 "authPage"
@@ -246,77 +857,161 @@ onAuthStateChanged(
         }
 
     }
+
 );
 
 
-// ========================
-// CHILD PROFILE
-// ========================
+
+/* =========================================
+   CREATE CHILD
+========================================= */
 
 $("addChildBtn")
-.addEventListener(
-    "click",
-    async () => {
+    .addEventListener(
+        "click",
+        async () => {
 
-        const name =
-            $("childName")
-                .value
-                .trim();
+            const name =
+                $("childName")
+                    .value
+                    .trim();
 
-        if (!name)
-            return;
 
-        await addDoc(
+            $("childMessage")
+                .textContent =
+                "";
 
-            collection(
-                db,
-                "users",
-                currentUser.uid,
-                "children"
-            ),
 
-            {
+            if (
+                !name
+            ) {
 
-                name,
+                $("childMessage")
+                    .textContent =
+                    "Please enter a ninja nickname.";
 
-                avatar:
-                    "🥷",
-
-                age:
-                    7,
-
-                year:
-                    1,
-
-                totalXP:
-                    0,
-
-                level:
-                    1,
-
-                createdAt:
-                    serverTimestamp()
+                return;
 
             }
 
-        );
 
-        $("childName")
-            .value = "";
+            if (
+                !currentUser
+            ) {
 
-        await loadChildren();
+                return;
 
-    }
-);
+            }
 
+
+            try {
+
+                $("addChildBtn")
+                    .disabled =
+                    true;
+
+
+                await addDoc(
+
+                    collection(
+                        db,
+                        "users",
+                        currentUser.uid,
+                        "children"
+                    ),
+
+                    {
+
+                        name:
+                            name,
+
+                        avatar:
+                            "🥷",
+
+                        age:
+                            7,
+
+                        year:
+                            1,
+
+                        totalXP:
+                            0,
+
+                        level:
+                            1,
+
+                        createdAt:
+                            serverTimestamp()
+
+                    }
+
+                );
+
+
+                $("childName")
+                    .value =
+                    "";
+
+
+                await loadChildren();
+
+
+            }
+            catch (
+                error
+            ) {
+
+                console.error(
+                    error
+                );
+
+
+                $("childMessage")
+                    .textContent =
+                    "Unable to create profile. Please try again.";
+
+            }
+            finally {
+
+                $("addChildBtn")
+                    .disabled =
+                    false;
+
+            }
+
+        }
+    );
+
+
+
+/* =========================================
+   LOAD CHILDREN
+========================================= */
 
 async function loadChildren() {
+
+    if (
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
 
     const container =
         $("childrenList");
 
+
     container.innerHTML =
-        "Loading...";
+        `
+
+        <div class="empty-state">
+            Loading Ninja profiles...
+        </div>
+
+        `;
+
 
     const snapshot =
         await getDocs(
@@ -330,59 +1025,105 @@ async function loadChildren() {
 
         );
 
+
     container.innerHTML =
         "";
 
-    snapshot.forEach(
-        childDoc => {
 
-            const child =
-                childDoc.data();
+    if (
+        snapshot.empty
+    ) {
+
+        container.innerHTML =
+            `
+
+            <div class="empty-state">
+
+                <div style="font-size:45px;">
+                    🥷
+                </div>
+
+                <h3>
+                    No Ninja yet!
+                </h3>
+
+                <p>
+                    Create your child's first profile below.
+                </p>
+
+            </div>
+
+            `;
+
+        return;
+
+    }
+
+
+    snapshot.forEach(
+        childDocument => {
+
+            const childData =
+                childDocument.data();
+
 
             const card =
                 document.createElement(
                     "button"
                 );
 
+
             card.className =
                 "child-card";
 
-            card.innerHTML = `
+
+            card.innerHTML =
+                `
 
                 <div class="child-avatar">
-                    ${child.avatar || "🥷"}
+                    ${childData.avatar || "🥷"}
                 </div>
 
                 <h3>
-                    ${child.name}
+                    ${escapeHTML(
+                        childData.name
+                    )}
                 </h3>
 
                 <p>
-                    ⚡ ${child.totalXP || 0} XP
+                    Year 1 Ninja
                 </p>
 
-            `;
+                <div class="child-xp">
+                    ⚡ ${childData.totalXP || 0} XP
+                </div>
 
-            card.onclick =
+                `;
+
+
+            card.addEventListener(
+                "click",
                 () => {
 
                     currentChild = {
 
                         id:
-                            childDoc.id,
+                            childDocument.id,
 
-                        ...child
+                        ...childData
 
                     };
 
+
                     openStudentHome();
 
-                };
+                }
+            );
 
-            container
-                .appendChild(
-                    card
-                );
+
+            container.appendChild(
+                card
+            );
 
         }
     );
@@ -390,19 +1131,59 @@ async function loadChildren() {
 }
 
 
-// ========================
-// STUDENT HOME
-// ========================
+
+/* =========================================
+   ESCAPE USER TEXT
+========================================= */
+
+function escapeHTML(
+    value
+) {
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+
+    element.textContent =
+        value || "";
+
+
+    return element.innerHTML;
+
+}
+
+
+
+/* =========================================
+   HOME
+========================================= */
 
 function openStudentHome() {
+
+    if (
+        !currentChild
+    ) {
+
+        showPage(
+            "childPage"
+        );
+
+        return;
+
+    }
+
 
     $("welcomeName")
         .textContent =
         currentChild.name;
 
+
     $("xpDisplay")
         .textContent =
         currentChild.totalXP || 0;
+
 
     showPage(
         "homePage"
@@ -411,69 +1192,98 @@ function openStudentHome() {
 }
 
 
-// ========================
-// TOPIC
-// ========================
+
+/* =========================================
+   SWITCH CHILD
+========================================= */
+
+$("switchChildBtn")
+    .addEventListener(
+        "click",
+        async () => {
+
+            currentChild =
+                null;
+
+
+            await loadChildren();
+
+
+            showPage(
+                "childPage"
+            );
+
+        }
+    );
+
+
+
+/* =========================================
+   TOPIC BUTTONS
+========================================= */
 
 document
-.querySelectorAll(
-    ".topic-card"
-)
-.forEach(
-    button => {
+    .querySelectorAll(
+        ".topic-card"
+    )
+    .forEach(
+        button => {
 
-        button
-        .addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
 
-                currentTopic =
-                    button.dataset.topic;
+                "click",
 
-                startQuiz();
+                () => {
 
-            }
-        );
+                    currentTopic =
+                        button.dataset.topic;
 
-    }
-);
 
+                    startQuiz();
+
+                }
+
+            );
+
+        }
+    );
+
+
+
+/* =========================================
+   RANDOM TRAINING
+========================================= */
 
 $("startTrainingBtn")
-.addEventListener(
-    "click",
-    () => {
+    .addEventListener(
+        "click",
+        () => {
 
-        const topics = [
-
-            "numbers",
-            "operations",
-            "fractions",
-            "money",
-            "time",
-            "measurement",
-            "space",
-            "data"
-
-        ];
-
-        currentTopic =
-            topics[
-                Math.floor(
-                    Math.random() *
-                    topics.length
-                )
-            ];
-
-        startQuiz();
-
-    }
-);
+            const topics =
+                Object.keys(
+                    topicNames
+                );
 
 
-// ========================
-// QUIZ
-// ========================
+            currentTopic =
+                topics[
+                    Math.floor(
+                        Math.random() *
+                        topics.length
+                    )
+                ];
+
+
+            startQuiz();
+
+        }
+    );
+
+
+
+/* =========================================
+   START QUIZ
+========================================= */
 
 function startQuiz() {
 
@@ -483,65 +1293,134 @@ function startQuiz() {
             10
         );
 
-    questionIndex = 0;
 
-    correctAnswers = 0;
+    questionIndex =
+        0;
 
-    score = 0;
 
-    streak = 0;
+    correctAnswers =
+        0;
 
-    bestStreak = 0;
+
+    score =
+        0;
+
+
+    streak =
+        0;
+
+
+    bestStreak =
+        0;
+
+
+    answeringLocked =
+        false;
+
+
+    $("quizTopic")
+        .textContent =
+        topicNames[
+            currentTopic
+        ];
+
+
+    $("quizScore")
+        .textContent =
+        "0";
+
+
+    $("streakDisplay")
+        .textContent =
+        "0";
+
 
     showPage(
         "quizPage"
     );
+
 
     showQuestion();
 
 }
 
 
+
+/* =========================================
+   SHOW QUESTION
+========================================= */
+
 function showQuestion() {
 
-    const q =
+    answeringLocked =
+        false;
+
+
+    const question =
         questions[
             questionIndex
         ];
 
+
     $("questionNumber")
         .textContent =
-        `QUESTION ${
+        `Question ${
             questionIndex + 1
         } / ${
             questions.length
         }`;
 
+
     $("questionText")
         .textContent =
-        q.question;
+        question.question;
+
 
     $("quizScore")
         .textContent =
         score;
 
-    $("progressBar")
-        .style.width =
-        `${
-            (
-                questionIndex /
-                questions.length
-            ) * 100
-        }%`;
 
-    const answers =
-        $("answersContainer");
+    $("streakDisplay")
+        .textContent =
+        streak;
 
-    answers.innerHTML =
+
+    $("answerFeedback")
+        .textContent =
         "";
 
-    q.answers
-    .forEach(
+
+    $("answerFeedback")
+        .className =
+        "answer-feedback";
+
+
+    const progress =
+        (
+            questionIndex /
+            questions.length
+        )
+        *
+        100;
+
+
+    $("progressBar")
+        .style
+        .width =
+        `${progress}%`;
+
+
+    const answersContainer =
+        $("answersContainer");
+
+
+    answersContainer.innerHTML =
+        "";
+
+
+    question.answers.forEach(
+
         answer => {
 
             const button =
@@ -549,86 +1428,98 @@ function showQuestion() {
                     "button"
                 );
 
+
             button.className =
                 "answer-btn";
+
 
             button.textContent =
                 answer;
 
-            button.onclick =
+
+            button.addEventListener(
+
+                "click",
+
                 () =>
                     checkAnswer(
                         answer,
                         button
-                    );
+                    )
 
-            answers
-                .appendChild(
-                    button
-                );
+            );
+
+
+            answersContainer.appendChild(
+                button
+            );
 
         }
+
     );
 
 }
 
 
-// ========================
-// CHECK ANSWER
-// ========================
+
+/* =========================================
+   CHECK ANSWER
+========================================= */
 
 function checkAnswer(
-    selected,
-    button
+    selectedAnswer,
+    selectedButton
 ) {
+
+    if (
+        answeringLocked
+    ) {
+
+        return;
+
+    }
+
+
+    answeringLocked =
+        true;
+
 
     const question =
         questions[
             questionIndex
         ];
 
-    document
-    .querySelectorAll(
-        ".answer-btn"
-    )
-    .forEach(
-        b =>
-            b.disabled = true
+
+    const buttons =
+        document.querySelectorAll(
+            ".answer-btn"
+        );
+
+
+    buttons.forEach(
+        button => {
+
+            button.disabled =
+                true;
+
+        }
     );
 
 
-    if (
-        selected ===
-        question.correct
-    ) {
+    const correct =
+        selectedAnswer ===
+        question.correct;
 
-        button
-            .classList
-            .add(
-                "correct"
-            );
+
+    if (
+        correct
+    ) {
 
         correctAnswers++;
 
+
         streak++;
 
-        score += 10;
-
-        if (
-            streak === 3
-        ) {
-
-            score += 5;
-
-        }
-
-        if (
-            streak === 5
-        ) {
-
-            score += 10;
-
-        }
 
         bestStreak =
             Math.max(
@@ -636,56 +1527,132 @@ function checkAnswer(
                 streak
             );
 
-        playSound(
-            "correctSound"
-        );
+
+        let points =
+            10;
+
+
+        if (
+            streak === 3
+        ) {
+
+            points +=
+                5;
+
+        }
+
+
+        if (
+            streak === 5
+        ) {
+
+            points +=
+                10;
+
+        }
+
+
+        if (
+            streak === 10
+        ) {
+
+            points +=
+                20;
+
+        }
+
+
+        score +=
+            points;
+
+
+        selectedButton
+            .classList
+            .add(
+                "correct"
+            );
+
+
+        $("answerFeedback")
+            .textContent =
+            streak >= 3
+            ? `🔥 Awesome! ${streak} answer streak!`
+            : "✅ Correct! Great job!";
+
+
+        $("answerFeedback")
+            .classList
+            .add(
+                "feedback-correct"
+            );
+
+
+        playCorrectSound();
 
     }
-
     else {
 
-        button
+        streak =
+            0;
+
+
+        selectedButton
             .classList
             .add(
                 "wrong"
             );
 
-        streak = 0;
 
-        document
-        .querySelectorAll(
-            ".answer-btn"
-        )
-        .forEach(
-            btn => {
+        buttons.forEach(
+            button => {
 
                 if (
-                    btn.textContent ===
+                    button.textContent ===
                     question.correct
                 ) {
 
-                    btn
-                        .classList
-                        .add(
-                            "correct"
-                        );
+                    button.classList.add(
+                        "correct"
+                    );
 
                 }
 
             }
         );
 
-        playSound(
-            "wrongSound"
-        );
+
+        $("answerFeedback")
+            .textContent =
+            `💡 Nice try! The answer is ${question.correct}.`;
+
+
+        $("answerFeedback")
+            .classList
+            .add(
+                "feedback-wrong"
+            );
+
+
+        playWrongSound();
 
     }
+
+
+    $("quizScore")
+        .textContent =
+        score;
+
+
+    $("streakDisplay")
+        .textContent =
+        streak;
 
 
     setTimeout(
         () => {
 
             questionIndex++;
+
 
             if (
                 questionIndex <
@@ -702,37 +1669,46 @@ function checkAnswer(
             }
 
         },
-        900
+        1100
     );
 
 }
 
 
-// ========================
-// FINISH QUIZ
-// ========================
+
+/* =========================================
+   FINISH QUIZ
+========================================= */
 
 async function finishQuiz() {
 
+    $("progressBar")
+        .style
+        .width =
+        "100%";
+
+
     const accuracy =
         Math.round(
-
             (
                 correctAnswers /
                 questions.length
-            ) * 100
-
+            )
+            *
+            100
         );
 
+
     let xp =
-        correctAnswers * 10;
+        score;
+
 
     if (
-        correctAnswers ===
-        questions.length
+        accuracy === 100
     ) {
 
-        xp += 20;
+        xp +=
+            25;
 
     }
 
@@ -741,56 +1717,94 @@ async function finishQuiz() {
         .textContent =
         score;
 
+
     $("correctResult")
         .textContent =
         `${correctAnswers}/${questions.length}`;
 
+
     $("accuracyResult")
         .textContent =
         `${accuracy}%`;
+
 
     $("xpResult")
         .textContent =
         `+${xp}`;
 
 
-    let stars =
-        "⭐";
+    $("bestStreakResult")
+        .textContent =
+        bestStreak;
 
-    if (
-        accuracy >= 70
-    ) {
 
-        stars =
-            "⭐⭐";
 
-    }
+    /* STARS */
 
     if (
         accuracy >= 90
     ) {
 
-        stars =
+        $("stars")
+            .textContent =
             "⭐⭐⭐";
 
     }
+    else if (
+        accuracy >= 70
+    ) {
 
-    $("stars")
+        $("stars")
+            .textContent =
+            "⭐⭐";
+
+    }
+    else {
+
+        $("stars")
+            .textContent =
+            "⭐";
+
+    }
+
+
+
+    /* MASTERY MESSAGE */
+
+    $("masteryMessage")
         .textContent =
-        stars;
+        getMasteryMessage(
+            accuracy
+        );
 
 
-    await saveAttempt(
-        xp,
-        accuracy
-    );
+    try {
+
+        await saveAttempt(
+            xp,
+            accuracy
+        );
+
+    }
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Unable to save quiz:",
+            error
+        );
+
+    }
 
 
     currentChild.totalXP =
         (
             currentChild.totalXP ||
             0
-        ) + xp;
+        )
+        +
+        xp;
 
 
     $("xpDisplay")
@@ -798,9 +1812,7 @@ async function finishQuiz() {
         currentChild.totalXP;
 
 
-    playSound(
-        "levelSound"
-    );
+    playCompleteSound();
 
 
     showPage(
@@ -810,14 +1822,80 @@ async function finishQuiz() {
 }
 
 
-// ========================
-// SAVE RESULT
-// ========================
+
+/* =========================================
+   MASTERY
+========================================= */
+
+function getMasteryMessage(
+    accuracy
+) {
+
+    if (
+        accuracy >=
+        95
+    ) {
+
+        return "🥷 NINJA MASTER — Outstanding mastery!";
+
+    }
+
+
+    if (
+        accuracy >=
+        85
+    ) {
+
+        return "🏆 MASTERED — Excellent work!";
+
+    }
+
+
+    if (
+        accuracy >=
+        70
+    ) {
+
+        return "⭐ GOOD — Keep training to reach mastery!";
+
+    }
+
+
+    if (
+        accuracy >=
+        50
+    ) {
+
+        return "💪 LEARNING — You're getting stronger!";
+
+    }
+
+
+    return "🥋 NEEDS TRAINING — Keep practising. You can do it!";
+
+}
+
+
+
+/* =========================================
+   SAVE QUIZ
+========================================= */
 
 async function saveAttempt(
     xp,
     accuracy
 ) {
+
+    if (
+        !currentUser
+        ||
+        !currentChild
+    ) {
+
+        return;
+
+    }
+
 
     await addDoc(
 
@@ -840,17 +1918,28 @@ async function saveAttempt(
             topic:
                 currentTopic,
 
+            topicName:
+                topicNames[
+                    currentTopic
+                ],
+
             correct:
                 correctAnswers,
 
             total:
                 questions.length,
 
-            accuracy,
+            accuracy:
+                accuracy,
 
-            score,
+            score:
+                score,
 
-            xp,
+            xp:
+                xp,
+
+            bestStreak:
+                bestStreak,
 
             createdAt:
                 serverTimestamp()
@@ -860,7 +1949,8 @@ async function saveAttempt(
     );
 
 
-    const childRef =
+
+    const childReference =
         doc(
 
             db,
@@ -874,14 +1964,35 @@ async function saveAttempt(
 
 
     await updateDoc(
-        childRef,
+
+        childReference,
+
         {
 
             totalXP:
-                increment(xp)
+                increment(
+                    xp
+                )
 
         }
+
     );
+
+
+
+    const newTotalXP =
+        (
+            currentChild.totalXP ||
+            0
+        )
+        +
+        xp;
+
+
+
+    const rankingId =
+        `${currentUser.uid}_${currentChild.id}`;
+
 
 
     await setDoc(
@@ -889,10 +2000,16 @@ async function saveAttempt(
         doc(
             db,
             "leaderboard",
-            currentChild.id
+            rankingId
         ),
 
         {
+
+            ownerUid:
+                currentUser.uid,
+
+            childId:
+                currentChild.id,
 
             nickname:
                 currentChild.name,
@@ -902,7 +2019,7 @@ async function saveAttempt(
                 "🥷",
 
             totalXP:
-                increment(xp),
+                newTotalXP,
 
             updatedAt:
                 serverTimestamp()
@@ -910,7 +2027,8 @@ async function saveAttempt(
         },
 
         {
-            merge: true
+            merge:
+                true
         }
 
     );
@@ -918,41 +2036,64 @@ async function saveAttempt(
 }
 
 
-// ========================
-// RESULT BUTTONS
-// ========================
+
+/* =========================================
+   RESULT BUTTONS
+========================================= */
 
 $("playAgainBtn")
-.addEventListener(
-    "click",
-    startQuiz
-);
+    .addEventListener(
+        "click",
+        () => {
+
+            startQuiz();
+
+        }
+    );
 
 
 $("resultHomeBtn")
-.addEventListener(
-    "click",
-    openStudentHome
-);
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
 
 
-// ========================
-// LEADERBOARD
-// ========================
+$("resultRankingBtn")
+    .addEventListener(
+        "click",
+        () => {
 
-$("navLeaderboard")
-.addEventListener(
-    "click",
-    loadLeaderboard
-);
+            loadLeaderboard();
+
+        }
+    );
 
 
-$("leaderboardBack")
-.addEventListener(
-    "click",
-    openStudentHome
-);
 
+/* =========================================
+   EXIT QUIZ
+========================================= */
+
+$("exitQuiz")
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
+
+
+
+/* =========================================
+   LEADERBOARD
+========================================= */
 
 async function loadLeaderboard() {
 
@@ -960,110 +2101,246 @@ async function loadLeaderboard() {
         "leaderboardPage"
     );
 
+
     const container =
         $("leaderboardList");
 
-    container.innerHTML =
-        "Loading Ninja Ranking...";
-
-
-    const q =
-        query(
-
-            collection(
-                db,
-                "leaderboard"
-            ),
-
-            orderBy(
-                "totalXP",
-                "desc"
-            ),
-
-            limit(20)
-
-        );
-
-
-    const snapshot =
-        await getDocs(q);
 
     container.innerHTML =
-        "";
+        `
 
-    let rank = 1;
+        <div class="empty-state">
+            Loading Ninja Ranking...
+        </div>
+
+        `;
 
 
-    snapshot.forEach(
-        rankingDoc => {
+    try {
 
-            const player =
-                rankingDoc.data();
+        const rankingQuery =
+            query(
 
-            const row =
-                document.createElement(
-                    "div"
-                );
+                collection(
+                    db,
+                    "leaderboard"
+                ),
 
-            row.className =
-                "ranking-row";
+                orderBy(
+                    "totalXP",
+                    "desc"
+                ),
 
-            row.innerHTML = `
+                limit(
+                    50
+                )
 
-                <strong>
-                    #${rank}
-                </strong>
+            );
 
-                <span>
-                    ${player.avatar || "🥷"}
-                    ${player.nickname}
-                </span>
 
-                <strong>
-                    ⚡ ${player.totalXP || 0}
-                </strong>
+        const snapshot =
+            await getDocs(
+                rankingQuery
+            );
 
-            `;
 
-            container
-                .appendChild(
+        container.innerHTML =
+            "";
+
+
+        if (
+            snapshot.empty
+        ) {
+
+            container.innerHTML =
+                `
+
+                <div class="empty-state">
+
+                    <div style="font-size:50px;">
+                        🏆
+                    </div>
+
+                    <h3>
+                        No ranking yet!
+                    </h3>
+
+                    <p>
+                        Complete your first mission to enter the Ninja Ranking.
+                    </p>
+
+                </div>
+
+                `;
+
+            return;
+
+        }
+
+
+        let rank =
+            1;
+
+
+        snapshot.forEach(
+            rankingDocument => {
+
+                const player =
+                    rankingDocument.data();
+
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "ranking-row";
+
+
+                if (
+                    rank === 1
+                ) {
+
+                    row.classList.add(
+                        "top-one"
+                    );
+
+                }
+
+
+                if (
+                    currentUser
+                    &&
+                    currentChild
+                    &&
+                    player.ownerUid ===
+                    currentUser.uid
+                    &&
+                    player.childId ===
+                    currentChild.id
+                ) {
+
+                    row.classList.add(
+                        "my-ranking"
+                    );
+
+                }
+
+
+                let rankDisplay =
+                    `#${rank}`;
+
+
+                if (
+                    rank === 1
+                ) {
+
+                    rankDisplay =
+                        "🥇";
+
+                }
+                else if (
+                    rank === 2
+                ) {
+
+                    rankDisplay =
+                        "🥈";
+
+                }
+                else if (
+                    rank === 3
+                ) {
+
+                    rankDisplay =
+                        "🥉";
+
+                }
+
+
+                row.innerHTML =
+                    `
+
+                    <div class="rank-number">
+                        ${rankDisplay}
+                    </div>
+
+                    <div class="rank-player">
+
+                        <div class="rank-avatar">
+                            ${player.avatar || "🥷"}
+                        </div>
+
+                        <span>
+                            ${escapeHTML(
+                                player.nickname
+                            )}
+                        </span>
+
+                    </div>
+
+                    <div class="rank-xp">
+                        ⚡ ${player.totalXP || 0} XP
+                    </div>
+
+                    `;
+
+
+                container.appendChild(
                     row
                 );
 
-            rank++;
 
-        }
-    );
+                rank++;
+
+            }
+        );
+
+
+    }
+    catch (
+        error
+    ) {
+
+        console.error(
+            error
+        );
+
+
+        container.innerHTML =
+            `
+
+            <div class="empty-state">
+                Unable to load ranking.
+            </div>
+
+            `;
+
+    }
 
 }
 
 
-// ========================
-// PARENT DASHBOARD
-// ========================
 
-$("navParent")
-.addEventListener(
-    "click",
-    loadParentDashboard
-);
+/* =========================================
+   GET ATTEMPTS
+========================================= */
 
+async function getCurrentChildAttempts() {
 
-$("parentBack")
-.addEventListener(
-    "click",
-    openStudentHome
-);
+    if (
+        !currentUser
+        ||
+        !currentChild
+    ) {
 
+        return [];
 
-async function loadParentDashboard() {
-
-    showPage(
-        "parentPage"
-    );
+    }
 
 
-    const q =
+    const attemptsQuery =
         query(
 
             collection(
@@ -1075,118 +2352,262 @@ async function loadParentDashboard() {
                 "uid",
                 "==",
                 currentUser.uid
-            ),
-
-            where(
-                "childId",
-                "==",
-                currentChild.id
             )
 
         );
 
 
     const snapshot =
-        await getDocs(q);
+        await getDocs(
+            attemptsQuery
+        );
 
 
-    let totalAccuracy = 0;
-
-    let totalXP = 0;
-
-    let attempts = [];
+    const attempts =
+        [];
 
 
     snapshot.forEach(
-        attemptDoc => {
+        attemptDocument => {
 
             const data =
-                attemptDoc.data();
+                attemptDocument.data();
 
-            attempts.push(
-                data
-            );
 
-            totalAccuracy +=
-                data.accuracy || 0;
+            if (
+                data.childId ===
+                currentChild.id
+            ) {
 
-            totalXP +=
-                data.xp || 0;
+                attempts.push(
+                    data
+                );
+
+            }
 
         }
     );
 
 
-    $("parentXP")
-        .textContent =
-        totalXP;
+    attempts.sort(
+        (
+            a,
+            b
+        ) => {
+
+            const dateA =
+                a.createdAt
+                ?.toMillis?.()
+                ||
+                0;
 
 
-    $("parentQuizzes")
-        .textContent =
+            const dateB =
+                b.createdAt
+                ?.toMillis?.()
+                ||
+                0;
+
+
+            return dateB -
+                dateA;
+
+        }
+    );
+
+
+    return attempts;
+
+}
+
+
+
+/* =========================================
+   PROGRESS PAGE
+========================================= */
+
+async function loadProgress() {
+
+    showPage(
+        "progressPage"
+    );
+
+
+    const attempts =
+        await getCurrentChildAttempts();
+
+
+    const totalMissions =
         attempts.length;
 
 
-    $("parentAverage")
-        .textContent =
+    const totalAccuracy =
+        attempts.reduce(
+            (
+                sum,
+                attempt
+            ) =>
+                sum +
+                (
+                    attempt.accuracy ||
+                    0
+                ),
 
-        attempts.length
+            0
+        );
 
+
+    const average =
+        totalMissions
         ?
-
-        `${
-            Math.round(
-                totalAccuracy /
-                attempts.length
-            )
-        }%`
-
+        Math.round(
+            totalAccuracy /
+            totalMissions
+        )
         :
+        0;
 
-        "0%";
+
+    $("progressXP")
+        .textContent =
+        currentChild.totalXP ||
+        0;
 
 
-    const list =
-        $("recentAttempts");
+    $("progressMissions")
+        .textContent =
+        totalMissions;
 
-    list.innerHTML =
+
+    $("progressAccuracy")
+        .textContent =
+        `${average}%`;
+
+
+    renderTopicProgress(
+        attempts
+    );
+
+}
+
+
+
+/* =========================================
+   TOPIC PROGRESS
+========================================= */
+
+function renderTopicProgress(
+    attempts
+) {
+
+    const container =
+        $("topicProgressList");
+
+
+    container.innerHTML =
         "";
 
 
-    attempts
-    .slice(-10)
-    .reverse()
+    Object.keys(
+        topicNames
+    )
     .forEach(
-        attempt => {
+        topic => {
 
-            const row =
+            const topicAttempts =
+                attempts.filter(
+                    attempt =>
+                        attempt.topic ===
+                        topic
+                );
+
+
+            let accuracy =
+                0;
+
+
+            if (
+                topicAttempts.length
+            ) {
+
+                accuracy =
+                    Math.round(
+
+                        topicAttempts.reduce(
+                            (
+                                total,
+                                attempt
+                            ) =>
+                                total +
+                                (
+                                    attempt.accuracy ||
+                                    0
+                                ),
+
+                            0
+                        )
+                        /
+                        topicAttempts.length
+
+                    );
+
+            }
+
+
+            const card =
                 document.createElement(
                     "div"
                 );
 
-            row.className =
-                "attempt-row";
 
-            row.innerHTML = `
+            card.className =
+                "topic-progress-card";
 
-                <strong>
-                    ${attempt.topic}
-                </strong>
 
-                <span>
-                    ${attempt.accuracy}%
-                </span>
+            card.innerHTML =
+                `
 
-                <span>
-                    +${attempt.xp} XP
-                </span>
+                <div class="topic-progress-top">
 
-            `;
+                    <div class="topic-progress-name">
+                        ${topicIcons[topic]}
+                        ${topicNames[topic]}
+                    </div>
 
-            list
-                .appendChild(
-                    row
-                );
+                    <div class="topic-progress-score">
+                        ${accuracy}%
+                    </div>
+
+                </div>
+
+
+                <div class="mastery-track">
+
+                    <div
+                        class="mastery-fill"
+                        style="width:${accuracy}%"
+                    ></div>
+
+                </div>
+
+
+                <div class="mastery-label">
+
+                    ${
+                        getProgressLabel(
+                            accuracy,
+                            topicAttempts.length
+                        )
+                    }
+
+                </div>
+
+                `;
+
+
+            container.appendChild(
+                card
+            );
 
         }
     );
@@ -1194,13 +2615,342 @@ async function loadParentDashboard() {
 }
 
 
-// ========================
-// EXIT QUIZ
-// ========================
 
-$("exitQuiz")
-.addEventListener(
-    "click",
-    openStudentHome
-);
+/* =========================================
+   PROGRESS LABEL
+========================================= */
 
+function getProgressLabel(
+    accuracy,
+    attempts
+) {
+
+    if (
+        attempts === 0
+    ) {
+
+        return "NOT STARTED";
+
+    }
+
+
+    if (
+        accuracy >= 95
+    ) {
+
+        return "NINJA MASTER";
+
+    }
+
+
+    if (
+        accuracy >= 85
+    ) {
+
+        return "MASTERED";
+
+    }
+
+
+    if (
+        accuracy >= 70
+    ) {
+
+        return "GOOD";
+
+    }
+
+
+    if (
+        accuracy >= 50
+    ) {
+
+        return "LEARNING";
+
+    }
+
+
+    return "NEEDS TRAINING";
+
+}
+
+
+
+/* =========================================
+   PARENT DASHBOARD
+========================================= */
+
+async function loadParentDashboard() {
+
+    showPage(
+        "parentPage"
+    );
+
+
+    $("parentChildName")
+        .textContent =
+        currentChild.name;
+
+
+    const attempts =
+        await getCurrentChildAttempts();
+
+
+    const numberOfAttempts =
+        attempts.length;
+
+
+    const totalAccuracy =
+        attempts.reduce(
+            (
+                sum,
+                attempt
+            ) =>
+                sum +
+                (
+                    attempt.accuracy ||
+                    0
+                ),
+
+            0
+        );
+
+
+    const average =
+        numberOfAttempts
+        ?
+        Math.round(
+            totalAccuracy /
+            numberOfAttempts
+        )
+        :
+        0;
+
+
+    $("parentXP")
+        .textContent =
+        currentChild.totalXP ||
+        0;
+
+
+    $("parentQuizzes")
+        .textContent =
+        numberOfAttempts;
+
+
+    $("parentAverage")
+        .textContent =
+        `${average}%`;
+
+
+    const list =
+        $("recentAttempts");
+
+
+    list.innerHTML =
+        "";
+
+
+    if (
+        attempts.length ===
+        0
+    ) {
+
+        list.innerHTML =
+            `
+
+            <div class="empty-state">
+
+                <div style="font-size:45px;">
+                    📚
+                </div>
+
+                <h3>
+                    No training yet
+                </h3>
+
+                <p>
+                    Quiz results will appear here after your child completes a mission.
+                </p>
+
+            </div>
+
+            `;
+
+        return;
+
+    }
+
+
+    attempts
+        .slice(
+            0,
+            10
+        )
+        .forEach(
+            attempt => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                row.className =
+                    "attempt-row";
+
+
+                row.innerHTML =
+                    `
+
+                    <div class="attempt-topic">
+
+                        ${
+                            topicIcons[
+                                attempt.topic
+                            ]
+                            ||
+                            "🥷"
+                        }
+
+                        ${
+                            escapeHTML(
+                                attempt.topicName
+                                ||
+                                topicNames[
+                                    attempt.topic
+                                ]
+                                ||
+                                "Math Training"
+                            )
+                        }
+
+                    </div>
+
+
+                    <div class="attempt-score">
+                        ${attempt.accuracy || 0}%
+                    </div>
+
+
+                    <div class="attempt-xp">
+                        +${attempt.xp || 0} XP
+                    </div>
+
+                    `;
+
+
+                list.appendChild(
+                    row
+                );
+
+            }
+        );
+
+}
+
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+$("navHome")
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
+
+
+$("navLeaderboard")
+    .addEventListener(
+        "click",
+        () => {
+
+            loadLeaderboard();
+
+        }
+    );
+
+
+$("navProgress")
+    .addEventListener(
+        "click",
+        () => {
+
+            loadProgress();
+
+        }
+    );
+
+
+$("navParent")
+    .addEventListener(
+        "click",
+        () => {
+
+            loadParentDashboard();
+
+        }
+    );
+
+
+$("leaderboardBack")
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
+
+
+$("progressBack")
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
+
+
+$("parentBack")
+    .addEventListener(
+        "click",
+        () => {
+
+            openStudentHome();
+
+        }
+    );
+
+
+
+/* =========================================
+   ENTER KEY LOGIN
+========================================= */
+
+$("password")
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key ===
+                "Enter"
+            ) {
+
+                $("loginBtn")
+                    .click();
+
+            }
+
+        }
+    );
