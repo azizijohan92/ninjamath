@@ -1,483 +1,1388 @@
-function shuffle(array) {
+/* =========================================
+   NINJAMATH QUESTION ENGINE
+========================================= */
 
-    return [...array]
-        .sort(() =>
-            Math.random() - 0.5
-        );
+
+function randomInt(
+    min,
+    max
+) {
+
+    return Math.floor(
+        Math.random() *
+        (
+            max - min + 1
+        )
+    ) + min;
 
 }
 
-function mcq(
+
+
+function shuffle(
+    array
+) {
+
+    const copy =
+        [...array];
+
+
+    for (
+        let i =
+            copy.length - 1;
+
+        i > 0;
+
+        i--
+    ) {
+
+        const j =
+            Math.floor(
+                Math.random() *
+                (
+                    i + 1
+                )
+            );
+
+
+        [
+            copy[i],
+            copy[j]
+        ]
+        =
+        [
+            copy[j],
+            copy[i]
+        ];
+
+    }
+
+
+    return copy;
+
+}
+
+
+
+function makeMCQ(
     question,
     correct,
     wrongAnswers
 ) {
+
+    const correctString =
+        String(correct);
+
+
+    const uniqueAnswers =
+        [
+            correctString,
+            ...wrongAnswers.map(
+                String
+            )
+        ]
+        .filter(
+            (
+                value,
+                index,
+                self
+            ) =>
+                self.indexOf(
+                    value
+                ) === index
+        );
+
+
+    while (
+        uniqueAnswers.length < 4
+    ) {
+
+        uniqueAnswers.push(
+            String(
+                uniqueAnswers.length +
+                randomInt(
+                    1,
+                    9
+                )
+            )
+        );
+
+    }
+
 
     return {
 
         question,
 
         correct:
-            String(correct),
+            correctString,
 
         answers:
-            shuffle([
-                correct,
-                ...wrongAnswers
-            ].map(String))
+            shuffle(
+                uniqueAnswers.slice(
+                    0,
+                    4
+                )
+            )
 
     };
 
 }
 
 
-// ============================
-// NUMBERS
-// ============================
+
+/* =========================================
+   NUMBER NINJA
+========================================= */
 
 function numberQuestion() {
 
     const type =
-        Math.floor(
-            Math.random() * 4
+        randomInt(
+            1,
+            7
         );
 
-    if (type === 0) {
+
+    /* AFTER NUMBER */
+
+    if (
+        type === 1
+    ) {
 
         const n =
-            Math.floor(
-                Math.random() * 91
-            ) + 10;
+            randomInt(
+                0,
+                98
+            );
 
-        return mcq(
+
+        return makeMCQ(
+
             `What number comes after ${n}?`,
+
             n + 1,
+
             [
                 n - 1,
                 n + 2,
                 n + 10
             ]
+
         );
 
     }
 
-    if (type === 1) {
+
+
+    /* BEFORE NUMBER */
+
+    if (
+        type === 2
+    ) {
 
         const n =
-            Math.floor(
-                Math.random() * 90
-            ) + 2;
+            randomInt(
+                2,
+                100
+            );
 
-        return mcq(
+
+        return makeMCQ(
+
             `What number comes before ${n}?`,
+
             n - 1,
+
             [
                 n + 1,
                 n - 2,
-                n + 10
+                Math.max(
+                    0,
+                    n - 10
+                )
             ]
+
         );
 
     }
 
-    if (type === 2) {
+
+
+    /* GREATER NUMBER */
+
+    if (
+        type === 3
+    ) {
 
         let a =
-            Math.floor(
-                Math.random() * 100
-            ) + 1;
-
-        let b =
-            Math.floor(
-                Math.random() * 100
-            ) + 1;
-
-        return mcq(
-            `Which number is greater?`,
-            Math.max(a,b),
-            [
-                Math.min(a,b),
-                Math.max(a,b) + 1,
-                Math.max(a,b) - 1
-            ]
-        );
-
-    }
-
-    const tens =
-        Math.floor(
-            Math.random() * 9
-        ) + 1;
-
-    const ones =
-        Math.floor(
-            Math.random() * 10
-        );
-
-    const number =
-        tens * 10 + ones;
-
-    return mcq(
-        `${number} has how many tens?`,
-        tens,
-        [
-            ones,
-            tens + 1,
-            Math.max(
-                0,
-                tens - 1
-            )
-        ]
-    );
-
-}
-
-
-// ============================
-// OPERATIONS
-// ============================
-
-function operationQuestion() {
-
-    const addition =
-        Math.random() > .5;
-
-    if (addition) {
-
-        let a =
-            Math.floor(
-                Math.random() * 40
+            randomInt(
+                1,
+                100
             );
 
         let b =
-            Math.floor(
-                Math.random() * 40
+            randomInt(
+                1,
+                100
             );
 
-        if (
-            a + b > 100
+
+        while (
+            a === b
         ) {
 
-            b = 100 - a;
+            b =
+                randomInt(
+                    1,
+                    100
+                );
 
         }
 
-        const answer =
-            a + b;
 
-        return mcq(
-            `${a} + ${b} = ?`,
+        const answer =
+            Math.max(
+                a,
+                b
+            );
+
+
+        return makeMCQ(
+
+            `Which number is greater: ${a} or ${b}?`,
+
             answer,
+
             [
-                answer + 1,
+                Math.min(
+                    a,
+                    b
+                ),
+
                 Math.max(
                     0,
                     answer - 1
                 ),
-                answer + 10
+
+                Math.min(
+                    100,
+                    answer + 1
+                )
             ]
+
         );
 
     }
 
 
-    let a =
-        Math.floor(
-            Math.random() * 80
-        ) + 20;
 
-    let b =
-        Math.floor(
-            Math.random() * a
+    /* SMALLER NUMBER */
+
+    if (
+        type === 4
+    ) {
+
+        let a =
+            randomInt(
+                1,
+                100
+            );
+
+        let b =
+            randomInt(
+                1,
+                100
+            );
+
+
+        while (
+            a === b
+        ) {
+
+            b =
+                randomInt(
+                    1,
+                    100
+                );
+
+        }
+
+
+        const answer =
+            Math.min(
+                a,
+                b
+            );
+
+
+        return makeMCQ(
+
+            `Which number is smaller: ${a} or ${b}?`,
+
+            answer,
+
+            [
+                Math.max(
+                    a,
+                    b
+                ),
+
+                Math.max(
+                    0,
+                    answer - 1
+                ),
+
+                answer + 1
+            ]
+
         );
 
-    const answer =
-        a - b;
+    }
 
-    return mcq(
-        `${a} − ${b} = ?`,
-        answer,
-        [
-            answer + 1,
-            Math.max(
+
+
+    /* TENS */
+
+    if (
+        type === 5
+    ) {
+
+        const tens =
+            randomInt(
+                1,
+                9
+            );
+
+
+        const ones =
+            randomInt(
                 0,
-                answer - 1
-            ),
-            answer + 10
+                9
+            );
+
+
+        const number =
+            tens * 10 +
+            ones;
+
+
+        return makeMCQ(
+
+            `How many tens are in ${number}?`,
+
+            tens,
+
+            [
+                ones,
+                tens + 1,
+                Math.max(
+                    0,
+                    tens - 1
+                )
+            ]
+
+        );
+
+    }
+
+
+
+    /* ONES */
+
+    if (
+        type === 6
+    ) {
+
+        const tens =
+            randomInt(
+                1,
+                9
+            );
+
+
+        const ones =
+            randomInt(
+                0,
+                9
+            );
+
+
+        const number =
+            tens * 10 +
+            ones;
+
+
+        return makeMCQ(
+
+            `What is the ones digit in ${number}?`,
+
+            ones,
+
+            [
+                tens,
+                Math.min(
+                    9,
+                    ones + 1
+                ),
+                Math.max(
+                    0,
+                    ones - 1
+                )
+            ]
+
+        );
+
+    }
+
+
+
+    /* MISSING NUMBER */
+
+    const start =
+        randomInt(
+            1,
+            95
+        );
+
+
+    const answer =
+        start + 2;
+
+
+    return makeMCQ(
+
+        `${start}, ${start + 1}, ?, ${start + 3}`,
+
+        answer,
+
+        [
+            start,
+            start + 1,
+            start + 3
         ]
+
     );
 
 }
 
 
-// ============================
-// FRACTIONS
-// ============================
+
+/* =========================================
+   OPERATION NINJA
+========================================= */
+
+function operationQuestion() {
+
+    const type =
+        randomInt(
+            1,
+            4
+        );
+
+
+    /* SIMPLE ADDITION */
+
+    if (
+        type === 1
+    ) {
+
+        const a =
+            randomInt(
+                0,
+                50
+            );
+
+
+        const b =
+            randomInt(
+                0,
+                100 - a
+            );
+
+
+        const answer =
+            a + b;
+
+
+        return makeMCQ(
+
+            `${a} + ${b} = ?`,
+
+            answer,
+
+            [
+                answer + 1,
+
+                Math.max(
+                    0,
+                    answer - 1
+                ),
+
+                Math.min(
+                    100,
+                    answer + 10
+                )
+            ]
+
+        );
+
+    }
+
+
+
+    /* SUBTRACTION */
+
+    if (
+        type === 2
+    ) {
+
+        const a =
+            randomInt(
+                1,
+                100
+            );
+
+
+        const b =
+            randomInt(
+                0,
+                a
+            );
+
+
+        const answer =
+            a - b;
+
+
+        return makeMCQ(
+
+            `${a} − ${b} = ?`,
+
+            answer,
+
+            [
+                answer + 1,
+
+                Math.max(
+                    0,
+                    answer - 1
+                ),
+
+                answer + 2
+            ]
+
+        );
+
+    }
+
+
+
+    /* MISSING ADDEND */
+
+    if (
+        type === 3
+    ) {
+
+        const a =
+            randomInt(
+                1,
+                20
+            );
+
+
+        const b =
+            randomInt(
+                1,
+                20
+            );
+
+
+        const total =
+            a + b;
+
+
+        return makeMCQ(
+
+            `${a} + ? = ${total}`,
+
+            b,
+
+            [
+                Math.max(
+                    0,
+                    b - 1
+                ),
+
+                b + 1,
+
+                a
+            ]
+
+        );
+
+    }
+
+
+
+    /* WORD PROBLEM */
+
+    const apples =
+        randomInt(
+            1,
+            10
+        );
+
+
+    const extra =
+        randomInt(
+            1,
+            10
+        );
+
+
+    const total =
+        apples + extra;
+
+
+    return makeMCQ(
+
+        `A ninja has ${apples} stars and gets ${extra} more. How many stars does the ninja have now?`,
+
+        total,
+
+        [
+            total - 1,
+            total + 1,
+            apples
+        ]
+
+    );
+
+}
+
+
+
+/* =========================================
+   FRACTION NINJA
+========================================= */
 
 function fractionQuestion() {
 
     const questions = [
 
-        mcq(
-            "One of two equal parts is called?",
+        makeMCQ(
+
+            "One of two equal parts is called...",
+
             "One half",
+
             [
                 "One quarter",
                 "One whole",
-                "Two halves"
+                "Two wholes"
             ]
+
         ),
 
-        mcq(
+
+        makeMCQ(
+
             "How many halves make one whole?",
+
             "2",
+
             [
                 "1",
                 "3",
                 "4"
             ]
+
         ),
 
-        mcq(
+
+        makeMCQ(
+
             "How many quarters make one whole?",
+
             "4",
+
             [
+                "1",
                 "2",
-                "3",
-                "5"
+                "3"
             ]
+
         ),
 
-        mcq(
-            "Which is bigger?",
+
+        makeMCQ(
+
+            "Which fraction is bigger?",
+
             "One half",
+
             [
                 "One quarter",
                 "They are equal",
                 "Zero"
             ]
+
+        ),
+
+
+        makeMCQ(
+
+            "A pizza is cut into 2 equal pieces. One piece is...",
+
+            "One half",
+
+            [
+                "One quarter",
+                "One whole",
+                "Four quarters"
+            ]
+
+        ),
+
+
+        makeMCQ(
+
+            "A cake is divided into 4 equal pieces. One piece is...",
+
+            "One quarter",
+
+            [
+                "One half",
+                "One whole",
+                "Two wholes"
+            ]
+
         )
 
     ];
 
+
     return questions[
-        Math.floor(
-            Math.random() *
-            questions.length
+        randomInt(
+            0,
+            questions.length - 1
         )
     ];
 
 }
 
 
-// ============================
-// MONEY
-// ============================
+
+/* =========================================
+   MONEY NINJA
+========================================= */
 
 function moneyQuestion() {
 
-    let price =
-        Math.floor(
-            Math.random() * 9
-        ) + 1;
+    const type =
+        randomInt(
+            1,
+            4
+        );
 
-    let quantity =
-        Math.floor(
-            Math.random() * 4
-        ) + 1;
 
-    const total =
-        price * quantity;
+    if (
+        type === 1
+    ) {
 
-    return mcq(
-        `${quantity} pencils cost RM${price} each. How much altogether?`,
-        `RM${total}`,
-        [
-            `RM${total + 1}`,
-            `RM${Math.max(
+        const a =
+            randomInt(
                 1,
-                total - 1
-            )}`,
-            `RM${price}`
+                10
+            );
+
+
+        const b =
+            randomInt(
+                1,
+                10
+            );
+
+
+        const total =
+            a + b;
+
+
+        return makeMCQ(
+
+            `You have RM${a} and get RM${b} more. How much money do you have?`,
+
+            `RM${total}`,
+
+            [
+                `RM${Math.max(
+                    0,
+                    total - 1
+                )}`,
+
+                `RM${total + 1}`,
+
+                `RM${a}`
+            ]
+
+        );
+
+    }
+
+
+
+    if (
+        type === 2
+    ) {
+
+        const money =
+            randomInt(
+                5,
+                20
+            );
+
+
+        const cost =
+            randomInt(
+                1,
+                money
+            );
+
+
+        const balance =
+            money - cost;
+
+
+        return makeMCQ(
+
+            `You have RM${money}. You spend RM${cost}. How much is left?`,
+
+            `RM${balance}`,
+
+            [
+                `RM${balance + 1}`,
+
+                `RM${Math.max(
+                    0,
+                    balance - 1
+                )}`,
+
+                `RM${money}`
+            ]
+
+        );
+
+    }
+
+
+
+    if (
+        type === 3
+    ) {
+
+        const sen =
+            [
+                5,
+                10,
+                20,
+                50
+            ];
+
+
+        const answer =
+            sen[
+                randomInt(
+                    0,
+                    sen.length - 1
+                )
+            ];
+
+
+        return makeMCQ(
+
+            `${answer} sen is written as...`,
+
+            `${answer} sen`,
+
+            sen
+                .filter(
+                    value =>
+                        value !== answer
+                )
+                .map(
+                    value =>
+                        `${value} sen`
+                )
+
+        );
+
+    }
+
+
+
+    return makeMCQ(
+
+        "Which unit is used for Malaysian money?",
+
+        "Ringgit and Sen",
+
+        [
+            "Dollar and Cent",
+            "Pound and Pence",
+            "Yen only"
         ]
+
     );
 
 }
 
 
-// ============================
-// TIME
-// ============================
+
+/* =========================================
+   TIME NINJA
+========================================= */
 
 function timeQuestion() {
 
-    const hour =
-        Math.floor(
-            Math.random() * 12
-        ) + 1;
+    const type =
+        randomInt(
+            1,
+            4
+        );
 
-    return mcq(
-        `The hour hand points to ${hour} and the minute hand points to 12. What time is it?`,
-        `${hour}:00`,
+
+    if (
+        type === 1
+    ) {
+
+        const hour =
+            randomInt(
+                1,
+                12
+            );
+
+
+        return makeMCQ(
+
+            `The minute hand points to 12 and the hour hand points to ${hour}. What time is it?`,
+
+            `${hour}:00`,
+
+            [
+                `${hour}:30`,
+                `${hour}:15`,
+                `${hour}:45`
+            ]
+
+        );
+
+    }
+
+
+
+    if (
+        type === 2
+    ) {
+
+        return makeMCQ(
+
+            "Which activity usually happens in the morning?",
+
+            "Eat breakfast",
+
+            [
+                "Sleep at night",
+                "Eat dinner",
+                "Look at stars at midnight"
+            ]
+
+        );
+
+    }
+
+
+
+    if (
+        type === 3
+    ) {
+
+        return makeMCQ(
+
+            "Which comes after Tuesday?",
+
+            "Wednesday",
+
+            [
+                "Monday",
+                "Friday",
+                "Sunday"
+            ]
+
+        );
+
+    }
+
+
+
+    return makeMCQ(
+
+        "How many days are there in one week?",
+
+        "7",
+
         [
-            `${hour}:30`,
-            `${hour}:15`,
-            `${hour}:45`
+            "5",
+            "6",
+            "8"
         ]
+
     );
 
 }
 
 
-// ============================
-// MEASUREMENT
-// ============================
+
+/* =========================================
+   MEASUREMENT NINJA
+========================================= */
 
 function measurementQuestion() {
 
     const questions = [
 
-        mcq(
-            "Which is usually heavier?",
-            "A school bag",
-            [
-                "A pencil",
-                "A paper clip",
-                "An eraser"
-            ]
-        ),
+        makeMCQ(
 
-        mcq(
-            "Which is usually longer?",
+            "Which object is usually longer?",
+
             "A classroom door",
+
             [
                 "A pencil",
                 "An eraser",
                 "A coin"
             ]
+
         ),
 
-        mcq(
+
+        makeMCQ(
+
+            "Which object is usually heavier?",
+
+            "A school bag",
+
+            [
+                "A paper clip",
+                "A pencil",
+                "An eraser"
+            ]
+
+        ),
+
+
+        makeMCQ(
+
             "Which container can usually hold more water?",
+
             "A bucket",
+
             [
                 "A spoon",
-                "A cup",
-                "A bottle cap"
+                "A bottle cap",
+                "A small cup"
             ]
+
+        ),
+
+
+        makeMCQ(
+
+            "Which word describes an object with less mass?",
+
+            "Lighter",
+
+            [
+                "Longer",
+                "Heavier",
+                "Taller"
+            ]
+
+        ),
+
+
+        makeMCQ(
+
+            "Which word describes a container with more liquid?",
+
+            "More",
+
+            [
+                "Shorter",
+                "Lighter",
+                "Smaller number"
+            ]
+
         )
 
     ];
 
+
     return questions[
-        Math.floor(
-            Math.random() *
-            questions.length
+        randomInt(
+            0,
+            questions.length - 1
         )
     ];
 
 }
 
 
-// ============================
-// SPACE
-// ============================
+
+/* =========================================
+   SHAPE NINJA
+========================================= */
 
 function spaceQuestion() {
 
     const questions = [
 
-        mcq(
+        makeMCQ(
+
             "Which shape has 3 sides?",
+
             "Triangle",
+
             [
-                "Square",
                 "Circle",
+                "Square",
                 "Rectangle"
             ]
+
         ),
 
-        mcq(
+
+        makeMCQ(
+
             "Which shape has no straight sides?",
+
             "Circle",
+
             [
                 "Square",
                 "Triangle",
                 "Rectangle"
             ]
+
         ),
 
-        mcq(
+
+        makeMCQ(
+
             "Which shape has 4 equal sides?",
+
             "Square",
+
             [
                 "Triangle",
                 "Circle",
                 "Oval"
             ]
+
+        ),
+
+
+        makeMCQ(
+
+            "A ball is most similar to which 3D shape?",
+
+            "Sphere",
+
+            [
+                "Cube",
+                "Cuboid",
+                "Cylinder"
+            ]
+
+        ),
+
+
+        makeMCQ(
+
+            "A dice is most similar to which 3D shape?",
+
+            "Cube",
+
+            [
+                "Sphere",
+                "Cylinder",
+                "Cone"
+            ]
+
+        ),
+
+
+        makeMCQ(
+
+            "A drink can is most similar to which 3D shape?",
+
+            "Cylinder",
+
+            [
+                "Cube",
+                "Sphere",
+                "Pyramid"
+            ]
+
         )
 
     ];
 
+
     return questions[
-        Math.floor(
-            Math.random() *
-            questions.length
+        randomInt(
+            0,
+            questions.length - 1
         )
     ];
 
 }
 
 
-// ============================
-// DATA
-// ============================
+
+/* =========================================
+   DATA NINJA
+========================================= */
 
 function dataQuestion() {
 
-    const apple =
-        Math.floor(
-            Math.random() * 6
-        ) + 1;
+    const type =
+        randomInt(
+            1,
+            3
+        );
 
-    const banana =
-        Math.floor(
-            Math.random() * 6
-        ) + 1;
 
-    if (
-        apple === banana
+    let apples =
+        randomInt(
+            1,
+            8
+        );
+
+
+    let bananas =
+        randomInt(
+            1,
+            8
+        );
+
+
+    while (
+        apples === bananas
     ) {
 
-        return dataQuestion();
+        bananas =
+            randomInt(
+                1,
+                8
+            );
 
     }
 
-    const correct =
-        apple > banana
-            ? "Apples"
-            : "Bananas";
 
-    return mcq(
-        `Fruit chart: Apples ${apple}, Bananas ${banana}. Which has more?`,
-        correct,
+
+    if (
+        type === 1
+    ) {
+
+        const correct =
+            apples > bananas
+                ? "Apples"
+                : "Bananas";
+
+
+        return makeMCQ(
+
+            `Fruit chart: Apples = ${apples}, Bananas = ${bananas}. Which fruit has more?`,
+
+            correct,
+
+            [
+                correct === "Apples"
+                    ? "Bananas"
+                    : "Apples",
+
+                "Both are equal",
+
+                "Cannot tell"
+            ]
+
+        );
+
+    }
+
+
+
+    if (
+        type === 2
+    ) {
+
+        const correct =
+            apples < bananas
+                ? "Apples"
+                : "Bananas";
+
+
+        return makeMCQ(
+
+            `Fruit chart: Apples = ${apples}, Bananas = ${bananas}. Which fruit has fewer?`,
+
+            correct,
+
+            [
+                correct === "Apples"
+                    ? "Bananas"
+                    : "Apples",
+
+                "Both are equal",
+
+                "Cannot tell"
+            ]
+
+        );
+
+    }
+
+
+
+    const total =
+        apples + bananas;
+
+
+    return makeMCQ(
+
+        `There are ${apples} apples and ${bananas} bananas. How many fruits altogether?`,
+
+        total,
+
         [
-            correct === "Apples"
-                ? "Bananas"
-                : "Apples",
-
-            "Both are equal",
-
-            "Cannot tell"
+            total + 1,
+            Math.max(
+                0,
+                total - 1
+            ),
+            apples
         ]
+
     );
 
 }
 
 
-// ============================
-// GENERATOR
-// ============================
+
+/* =========================================
+   GENERATE QUIZ
+========================================= */
 
 export function generateQuiz(
     topic,
@@ -512,11 +1417,18 @@ export function generateQuiz(
 
     };
 
+
     const generator =
-        generators[topic] ||
+        generators[
+            topic
+        ]
+        ||
         numberQuestion;
 
-    let quiz = [];
+
+    const quiz =
+        [];
+
 
     for (
         let i = 0;
@@ -529,6 +1441,7 @@ export function generateQuiz(
         );
 
     }
+
 
     return quiz;
 
